@@ -10,6 +10,7 @@ import Login from "./features/auth/pages/Login/Login";
 import Register from "./features/auth/pages/Register/Register";
 import ResetPassword from "./features/auth/pages/ResetPassword/ResetPassword";
 import VerifyEmail from "./features/auth/pages/VerifyEmail/VerifyEmail";
+import Profile from "./features/auth/pages/Profile/Profile";
 
 function App() {
   return (
@@ -23,7 +24,7 @@ function App() {
               <Route path="register" element={<Register />} />
               <Route path="request-password-reset" element={<ResetPassword />} />
               <Route path="verify-email" element={<VerifyEmail />} />
-              <Route path="profile/:userId" element={<div>User Profile Page</div>} />
+              <Route path="profile/:userId" element={<Profile />} />
             </Route>
           </Route>
         </Routes>

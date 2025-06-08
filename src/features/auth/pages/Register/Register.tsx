@@ -1,21 +1,19 @@
-import React from 'react'
-import { useAppDispatch, useAppSelector } from '../../../../store/store';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useFormik } from 'formik';
-import { register } from '../../../../store/authSlice';
-import * as Yup from 'yup';
-import BoxComponent from '../../../../components/BoxComponent/BoxComponent';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
-import OtherLogin from '../../components/OtherLogin/OtherLogin';
+import React from "react";
+import { useAppDispatch, useAppSelector } from "../../../../store/store";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useFormik } from "formik";
+import { register } from "../../../../store/authSlice";
+import * as Yup from "yup";
+import BoxComponent from "../../../../components/BoxComponent/BoxComponent";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
+import OtherLogin from "../../components/OtherLogin/OtherLogin";
 
 const Register = () => {
-  const {error, status} = useAppSelector((state) => state.auth);
+  const { error, status } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-
-
 
   const formik = useFormik({
     initialValues: {
@@ -24,11 +22,13 @@ const Register = () => {
     },
     onSubmit: async (values) => {
       console.log(values);
-      await dispatch(register({email: values.email, password: values.password}));
-      if (status.register === "succeeded") {
-        const from= "/";
-        navigate(from);
-      }
+      await dispatch(
+        register({ email: values.email, password: values.password })
+      )
+        .unwrap()
+        .then(() => {
+          navigate("/");
+        });
     },
     validationSchema: Yup.object({
       email: Yup.string().email("Invalid email address").required("Required"),
@@ -43,8 +43,8 @@ const Register = () => {
       <BoxComponent className="space-y-4">
         <h1 className="text-3xl font-bold text-gray-700">Register</h1>
         <p className="text-gray-600 text--sm">
-          Create a new account by filling out the form below. 
-          You will be able to log in once your account is created.
+          Create a new account by filling out the form below. You will be able
+          to log in once your account is created.
         </p>
         <form onSubmit={formik.handleSubmit} className="space-y-4">
           <div className="space-y-1">
@@ -83,17 +83,12 @@ const Register = () => {
               error={formik.touched.password && Boolean(formik.errors.password)}
               helperText={formik.touched.password && formik.errors.password}
               fullWidth
-              
             />
           </div>
-          {
-            error.register && status.register === "failed" ? (
-              <div className="text-error">
-                {error.register}
-              </div>
-            ) : null
-          }
-          
+          {error.register && status.register === "failed" ? (
+            <div className="text-error">{error.register}</div>
+          ) : null}
+
           <div className="mt-8">
             <Button
               type="submit"
@@ -112,7 +107,7 @@ const Register = () => {
           <Divider>Or</Divider>
         </div>
         <div>
-          <OtherLogin/>
+          <OtherLogin />
         </div>
         <div className="text-center text-gray-600 mt-8">
           Have an account?{" "}
@@ -121,9 +116,14 @@ const Register = () => {
           </a>
         </div>
       </BoxComponent>
-       <h1 className="text-sm mx-auto text-gray-700 text-center">Bạn đang muốn tạo một trang cho doanh nghiệp? <a href="" className="text-[var(--primary-color)] hover:underline">Nhận trợ giúp</a></h1>
+      <h1 className="text-sm mx-auto text-gray-700 text-center mt-4">
+        Bạn đang muốn tạo một trang cho doanh nghiệp?{" "}
+        <a href="" className="text-[var(--primary-color)] hover:underline">
+          Nhận trợ giúp
+        </a>
+      </h1>
     </div>
   );
-}
+};
 
-export default Register
+export default Register;

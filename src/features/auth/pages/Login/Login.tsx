@@ -22,12 +22,11 @@ const Login = () => {
     },
     onSubmit: async (values) => {
       console.log(values);
-      await dispatch(login({email: values.email, password: values.password}));
-      if (status.login === "succeeded") {
-        // Redirect to the page user was trying to access before login
+      await dispatch(login({email: values.email, password: values.password})).unwrap().then(() => {
+         // Redirect to the page user was trying to access before login
         const from = location.state?.from || "/";
         navigate(from);
-      }
+      });
     },
     validationSchema: Yup.object({
       email: Yup.string().email("Invalid email address").required("Required"),

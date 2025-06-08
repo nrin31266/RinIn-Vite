@@ -20,10 +20,9 @@ const VerifyEmail = () => {
     onSubmit: async (values) => {
       // Handle form submission logic here
       console.log("Form submitted:", values);
-      await dispatch(verifyEmail({ token: values.token }));
-      if (status.verifyEmail === "succeeded") {
+      await dispatch(verifyEmail({ token: values.token })).unwrap().then(() => {
         navigate("/");
-      }
+      });
     },
     validationSchema: Yup.object({
       token: Yup.string()
