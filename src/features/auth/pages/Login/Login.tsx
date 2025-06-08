@@ -90,8 +90,14 @@ const Login = () => {
               </div>
             ) : null
           }
-          
+
           <div className="mt-8">
+            <a href="/auth/request-password-reset" className="text-[var(--primary-color)] text-sm">
+              Forgot Password?
+            </a>
+          </div>
+          
+          <div className="">
             <Button
               type="submit"
               variant="contained"
