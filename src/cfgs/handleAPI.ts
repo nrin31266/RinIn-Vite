@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = import.meta.env.BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 interface RequestParams<B = unknown> {
   endpoint: string;
@@ -40,7 +40,7 @@ const handleAPI = async <T, B = unknown>({
       method,
       data: body,
       headers,
-      baseURL: BASE_URL,
+      baseURL: API_BASE_URL,
       timeout: 5000,
       params,
     });
@@ -50,7 +50,8 @@ const handleAPI = async <T, B = unknown>({
 
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.data) {
-      throw new Error(error.response.data.data.message);
+      console.log(error)
+      throw new Error(error.response.data.message);
     } else {
       console.error("An unexpected error occurred.", error);
       throw new Error("An unexpected error occurred.");

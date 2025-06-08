@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { useLocation, Navigate, Outlet } from "react-router-dom";
 import { fetchUser } from "../../store/authSlice";
+import Loading from "../Loading/Loading";
 
 const AuthGuard = () => {
   const dispatch = useAppDispatch();
@@ -18,11 +19,12 @@ const AuthGuard = () => {
     if (!user) {
       dispatch(fetchUser());
     }
-  }, [dispatch, user]);
+  }, [dispatch, location.pathname]);
 
   if (status.fetchUser === "loading") {
-    return <div className="text-4xl">Loading...</div>;
+    return <Loading/>;
   }
+  
 
   // Chưa login
   if (!user && !isOnAuthPage) {

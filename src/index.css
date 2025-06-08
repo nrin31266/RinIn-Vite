@@ -4,7 +4,7 @@
   --primary-color: #4da8da;
   --secondary-color: #7f8caa;
   --primary-color-dark: #27548a;
-  --background-color: #f0f4f8;
+  --background-color: #FAF6E9;
   --text-color: #333333;
   --text-color-light: #ffffff;
 }
@@ -42,4 +42,16 @@ ul {
   color: #2ecc71;
   font-weight: 500;
   font-size: 0.875rem;
+}
+
+
+
+@layer base {
+   @keyframes slide {
+    0% { transform: translateX(0.5rem) }
+    100% { transform: translateX(5.5rem) }
+  }
+  .animate-slide {
+    animation: slide 1s infinite alternate;
+  }
 }

@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import handleAPI from "../cfgs/handleAPI";
 import { extractErrorMessage } from "./utils";
 import { updateUserProfile } from "./userProfile";
@@ -188,6 +188,9 @@ const authSlice = createSlice({
       state.user = null;
       localStorage.clear();
     },
+    setUser: (state, action : PayloadAction<IUser>) => {
+      state.user = action.payload;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -232,6 +235,8 @@ const authSlice = createSlice({
       })
       .addCase(sendEmailVerification.pending, (state) => {
         state.status.sendEmailVerification = "loading";
+        state.error.sendEmailVerification = null;
+        state.error.verifyEmail = null;
       })
       .addCase(sendEmailVerification.fulfilled, (state) => {
         state.status.sendEmailVerification = "succeeded";
@@ -244,6 +249,7 @@ const authSlice = createSlice({
         state.status.verifyEmail = "loading";
       })
       .addCase(verifyEmail.fulfilled, (state) => {
+        state.user!.emailVerified = true; // Assuming user is always defined here
         state.status.verifyEmail = "succeeded";
       })
       .addCase(verifyEmail.rejected, (state, action) => {
@@ -273,5 +279,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, setUser } = authSlice.actions;
 export default authSlice.reducer;

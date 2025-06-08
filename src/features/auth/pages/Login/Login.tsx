@@ -1,17 +1,19 @@
-import React from "react";
-import Box from "@mui/material/Box";
 import BoxComponent from "../../../../components/BoxComponent/BoxComponent";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { useAppDispatch, useAppSelector } from "../../../../store/store";
-import { useDispatch } from "react-redux";
 import { login } from "../../../../store/authSlice";
+import Divider from "@mui/material/Divider";
+import OtherLogin from "../../components/OtherLogin/OtherLogin";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const {error, status} = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const formik = useFormik({
     initialValues: {
@@ -21,6 +23,11 @@ const Login = () => {
     onSubmit: async (values) => {
       console.log(values);
       await dispatch(login({email: values.email, password: values.password}));
+      if (status.login === "succeeded") {
+        // Redirect to the page user was trying to access before login
+        const from = location.state?.from || "/";
+        navigate(from);
+      }
     },
     validationSchema: Yup.object({
       email: Yup.string().email("Invalid email address").required("Required"),
@@ -74,6 +81,7 @@ const Login = () => {
               error={formik.touched.password && Boolean(formik.errors.password)}
               helperText={formik.touched.password && formik.errors.password}
               fullWidth
+              
             />
           </div>
           {
@@ -91,11 +99,25 @@ const Login = () => {
               color="primary"
               size="large"
               fullWidth
+              disabled={status.login === "loading" ? true : false}
+              loading={status.login === "loading" ? true : false}
             >
               Login
             </Button>
           </div>
         </form>
+        <div className="mt-6">
+          <Divider>Or</Divider>
+        </div>
+        <div>
+          <OtherLogin/>
+        </div>
+        <div className="text-center text-gray-600 mt-8">
+          Don't have an account?{" "}
+          <a href="/auth/register" className="text-[var(--primary-color)]">
+            Register
+          </a>
+        </div>
       </BoxComponent>
     </div>
   );

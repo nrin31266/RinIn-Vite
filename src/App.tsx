@@ -7,6 +7,9 @@ import AuthGuard from "./components/AuthGuard/AuthGuard";
 import AppLayout from "./components/AppLayout/AppLayout";
 import AuthLayout from "./components/AuthLayout/AuthLayout";
 import Login from "./features/auth/pages/Login/Login";
+import Register from "./features/auth/pages/Register/Register";
+import ResetPassword from "./features/auth/pages/ResetPassword/ResetPassword";
+import VerifyEmail from "./features/auth/pages/VerifyEmail/VerifyEmail";
 
 function App() {
   return (
@@ -17,9 +20,9 @@ function App() {
             <Route path="/" element={<AppLayout />} />
             <Route path="/auth" element={<AuthLayout />} >
               <Route path="login" element={<Login />} />
-              <Route path="register" element={<div>Register Page</div>} />
-              <Route path="request-password-reset" element={<div>Request Password Reset Page</div>} />
-              <Route path="verify-email" element={<div>Verify Email Page</div>} />
+              <Route path="register" element={<Register />} />
+              <Route path="request-password-reset" element={<ResetPassword />} />
+              <Route path="verify-email" element={<VerifyEmail />} />
               <Route path="profile/:userId" element={<div>User Profile Page</div>} />
             </Route>
           </Route>

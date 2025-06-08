@@ -7,9 +7,10 @@ const AuthLayout = () => {
       <header className="p-2 mx-auto container max-h-max flex gap-4 ">
         <img src="/logo.png" alt="Logo" className="logo w-20 h-20 rounded-md" />
       </header>
-      <main className="container w-full h-full mx-auto space-y-8">
+      <main className="container w-full h-full mx-auto space-y-6">
         <h1 className="text-2xl mx-auto text-gray-700 text-center">Tận dụng tối đa cuộc sống nghề nghiệp của bạn</h1>
         <Outlet />
+       
       </main>
       <footer className="max-h-max bg-white p-4">
         <ul className="container mx-auto flex flex-wrap items-center justify-between gap-2 text-sm text-gray-600">
