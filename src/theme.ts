@@ -12,6 +12,7 @@ const textColor          = rootStyles.getPropertyValue('--text-color').trim();
 const textColorLight     = rootStyles.getPropertyValue('--text-color-light').trim();
 
 const theme = createTheme({
+
   palette: {
     primary: {
       main:  primaryColor,
@@ -51,7 +52,10 @@ const theme = createTheme({
         },
       },
     },
+    
+    
   },
+  
 });
 
 export default theme;

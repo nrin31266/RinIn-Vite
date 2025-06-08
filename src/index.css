@@ -22,3 +22,24 @@ a {
 ul {
   list-style: none;
 }
+
+
+
+.container {
+  max-width: 84rem;
+  width: 100%;
+  margin: 0 auto;
+  
+}
+
+.text-error {
+  color: #e74c3c;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.text-success {
+  color: #2ecc71;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
