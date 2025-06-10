@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { data, NavLink, useLocation } from "react-router-dom";
+import {
+  fetchInvitations,
+  type IConnection,
+} from "../../../../store/networkingSlide";
+import { useAppDispatch, useAppSelector } from "../../../../store/store";
+import Badge from "@mui/material/Badge";
+import { useWebSocket } from "../../../../features/ws/WebSocketProvider";
 
 const MainNav = () => {
   const location = useLocation();
@@ -7,6 +14,10 @@ const MainNav = () => {
   const [showNavigationMenu, setShowNavigationMenu] = useState(
     isLargeScreen ? true : false
   );
+  const { user } = useAppSelector((state) => state.auth);
+  const [invitations, setInvitations] = useState<IConnection[]>([]);
+  const dispatch = useAppDispatch();
+  const ws = useWebSocket();
   // refs để check click ngoài
   const isMenuOpenRef = useRef(showNavigationMenu);
   const navRef = useRef<HTMLElement>(null);
@@ -26,7 +37,6 @@ const MainNav = () => {
         !navRef.current.contains(target) &&
         toggleRef.current &&
         !toggleRef.current.contains(target)
-     
       ) {
         setShowNavigationMenu(false);
       }
@@ -46,6 +56,76 @@ const MainNav = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    const subscription = ws?.subscribe(
+      `/topic/users/${user?.id}/connections/new`,
+      (res) => {
+        const data: IConnection = JSON.parse(res.body);
+        if (data && data.recipient.id === user?.id) {
+          setInvitations((prev) => [...prev, data]);
+        }
+      }
+    );
+    return () => subscription?.unsubscribe();
+  }, [ws, user?.id]);
+  useEffect(() => {
+    const subscription = ws?.subscribe(
+      `/topic/users/${user?.id}/connections/rejected`,
+      (res) => {
+        const data: IConnection = JSON.parse(res.body);
+        if (data && data.recipient.id === user?.id) {
+          setInvitations((prev) =>
+            prev.filter((invitation) => invitation.id !== data.id)
+          );
+        }
+      }
+    );
+    return () => subscription?.unsubscribe();
+  }, [ws, user?.id]);
+  useEffect(() => {
+    const subscription = ws?.subscribe(
+      `/topic/users/${user?.id}/connections/seen`,
+      (res) => {
+        const data: IConnection = JSON.parse(res.body);
+        if (data && data.recipient.id === user?.id) {
+          setInvitations((prev) =>
+            prev.filter((invitation) => invitation.id !== data.id)
+          );
+        }
+      }
+    );
+    return () => subscription?.unsubscribe();
+  }, [ws, user?.id]);
+
+  //   useEffect(() => {
+  //     const subscription = ws?.subscribe(
+  //       `/topic/users/${user?.id}/connections/accepted`,
+  //       (res) => {
+  //         const data: IConnection = JSON.parse(res.body);
+  //         if (data && data.recipient.id === user?.id) {
+  //           setInvitations((prev) =>
+  //             prev.filter((invitation) => invitation.id !== data.id)
+  //           );
+  //         }
+  //       }
+  //     );
+  //     return () => subscription?.unsubscribe();
+  //   }, [ws, user?.id]);
+
+  useEffect(() => {
+    dispatch(fetchInvitations())
+      .unwrap()
+      .then((data) => {
+        console.log(data);
+        setInvitations(
+          data.filter(
+            (invitation) =>
+              !invitation.seen && invitation.recipient.id === user?.id
+          )
+        );
+      });
+  }, [user?.id, dispatch]);
 
   return (
     <div>
@@ -81,19 +161,23 @@ const MainNav = () => {
                 to="/networking/invitations"
                 className="flex md:flex-col items-center gap-2 md:gap-0 text-gray-500 hover:text-[var(--text-color)]"
                 style={{
-                    color: location.pathname.startsWith("/networking") ? "var(--primary-color)" : undefined,
+                  color: location.pathname.startsWith("/networking")
+                    ? "var(--primary-color)"
+                    : undefined,
                 }}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  focusable="false"
-                  width="24"
-                  height="24"
-                >
-                  <path d="M12 16v6H3v-6a3 3 0 013-3h3a3 3 0 013 3zm5.5-3A3.5 3.5 0 1014 9.5a3.5 3.5 0 003.5 3.5zm1 2h-2a2.5 2.5 0 00-2.5 2.5V22h7v-4.5a2.5 2.5 0 00-2.5-2.5zM7.5 2A4.5 4.5 0 1012 6.5 4.49 4.49 0 007.5 2z"></path>
-                </svg>
+                <Badge badgeContent={invitations.length} color="error" max={99}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    focusable="false"
+                    width="24"
+                    height="24"
+                  >
+                    <path d="M12 16v6H3v-6a3 3 0 013-3h3a3 3 0 013 3zm5.5-3A3.5 3.5 0 1014 9.5a3.5 3.5 0 003.5 3.5zm1 2h-2a2.5 2.5 0 00-2.5 2.5V22h7v-4.5a2.5 2.5 0 00-2.5-2.5zM7.5 2A4.5 4.5 0 1012 6.5 4.49 4.49 0 007.5 2z"></path>
+                  </svg>
+                </Badge>
                 <h1 className="text-xs">Network</h1>
               </NavLink>
             </li>

@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { IUser } from "./authSlice";
 import { extractErrorMessage } from "./utils";
 import handleAPI from "../cfgs/handleAPI";
+import { setIn } from "formik";
 
 export interface IConnection {
   id: number;
@@ -23,6 +24,7 @@ interface INetworkingState {
     sendInvitation: "idle" | "loading" | "succeeded" | "failed";
     acceptInvitation: "idle" | "loading" | "succeeded" | "failed";
     rejectOrCancelInvitation: "idle" | "loading" | "succeeded" | "failed";
+    markConnectionAsSeen?: "idle" | "loading" | "succeeded" | "failed";
   };
   error: {
     fetchSuggestions: string | null;
@@ -31,6 +33,7 @@ interface INetworkingState {
     sendInvitation: string | null;
     acceptInvitation: string | null;
     rejectOrCancelInvitation: string | null;
+    markConnectionAsSeen?: string | null;
   };
 }
 const initialState: INetworkingState = {
@@ -146,10 +149,33 @@ export const rejectOrCancelInvitation = createAsyncThunk<
     }
   }
 );
+export const markConnectionAsSeen = createAsyncThunk<
+  IConnection,
+  { id: number }
+>("networking/markConnectionAsSeen", async ({ id }, { rejectWithValue }) => {
+  try {
+    const data = await handleAPI<IConnection>({
+      endpoint: `/networking/connections/${id}/seen`,
+      method: "put",
+      isAuth: true,
+    });
+    return data;
+  } catch (error) {
+    return rejectWithValue(extractErrorMessage(error));
+  }
+});
+
 const networkingSlice = createSlice({
   name: "networking",
   initialState,
-  reducers: {},
+  reducers: {
+    setInvitations: (state, action) => {
+      state.invitations = action.payload;
+    },
+    setConnections: (state, action) => {
+      state.connections = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchSuggestions.pending, (state) => {
@@ -244,8 +270,25 @@ const networkingSlice = createSlice({
       .addCase(rejectOrCancelInvitation.rejected, (state, action) => {
         state.status.rejectOrCancelInvitation = "failed";
         state.error.rejectOrCancelInvitation = action.payload as string;
+      })
+      .addCase(markConnectionAsSeen.pending, (state) => {
+        state.status.markConnectionAsSeen = "loading";
+      })
+      .addCase(markConnectionAsSeen.fulfilled, (state, action) => {
+        state.status.markConnectionAsSeen = "succeeded";
+        const index = state.connections.findIndex(
+          (connection) => connection.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.connections[index] = action.payload;
+        }
+      })
+      .addCase(markConnectionAsSeen.rejected, (state, action) => {
+        state.status.markConnectionAsSeen = "failed";
+        state.error.markConnectionAsSeen = action.payload as string;
       });
   },
 });
 
 export default networkingSlice.reducer;
+export const { setInvitations, setConnections } = networkingSlice.actions;

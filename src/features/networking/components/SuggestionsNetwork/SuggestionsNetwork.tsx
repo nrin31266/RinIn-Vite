@@ -26,7 +26,7 @@ const SuggestionsNetwork = () => {
       <div className='flex flex-col gap-4 px-4'>
        {
         suggestions.length > 0 ? suggestions.map((user) => <UserSuggestionCard key={user.id} user={user} />) : (
-          <div className='text-gray-500 text-sm'>
+          <div className='text-gray-500 text-sm pb-4'>
             No suggestions available at the moment.
           </div>
        )}

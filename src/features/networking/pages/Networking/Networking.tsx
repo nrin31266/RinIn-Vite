@@ -5,8 +5,8 @@ import SuggestionsNetwork from "../../components/SuggestionsNetwork/SuggestionsN
 
 const Networking = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[14rem_1fr] px-1 lg:px-2 md:gap-4 xl:grid-cols-[14rem_1fr_20rem] ">
-      <div className="md:block hidden">
+    <div className="grid grid-rows-[auto_auto] md:grid-cols-[14rem_1fr] px-1 lg:px-2 gap-4 xl:grid-cols-[14rem_1fr_20rem] ">
+      <div className="">
         <NetworkLeftBar />
       </div>
       <div className="flex flex-col gap-4">

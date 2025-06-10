@@ -1,5 +1,5 @@
-import React from 'react'
-import { acceptInvitation, rejectOrCancelInvitation, type IConnection } from '../../../../store/networkingSlide'
+import React, { useEffect } from 'react'
+import { acceptInvitation, markConnectionAsSeen, rejectOrCancelInvitation, type IConnection } from '../../../../store/networkingSlide'
 import { useAppDispatch, useAppSelector } from '../../../../store/store'
 import Button from '@mui/material/Button';
 
@@ -10,6 +10,14 @@ const ConnectionCard = ({ connection, type} : {connection : IConnection, type: "
   const {user} = useAppSelector((state) => state.auth);
   const isSent = connection.author.id === user?.id;
   const accountToShow = user?.id === connection.author.id ? connection.recipient : connection.author;
+
+
+  useEffect(() => {
+    if (!connection.seen && connection.recipient.id === user?.id) {
+      console.log("Marking connection as seen:", connection.id);
+      dispatch(markConnectionAsSeen({ id: connection.id }));
+    }
+  }, [dispatch, user?.id, connection.id]);
 
   return (
     <div className='grid grid-cols-[auto_1fr_auto] items-center gap-2 not-last:border-b border-gray-200 pb-4'>
