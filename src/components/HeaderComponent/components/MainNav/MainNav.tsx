@@ -78,11 +78,11 @@ const MainNav = () => {
             </li>
             <li>
               <NavLink
-                to="/networking"
+                to="/networking/invitations"
                 className="flex md:flex-col items-center gap-2 md:gap-0 text-gray-500 hover:text-[var(--text-color)]"
-                style={({ isActive }) => ({
-                  color: isActive ? "var(--primary-color)" : undefined,
-                })}
+                style={{
+                    color: location.pathname.startsWith("/networking") ? "var(--primary-color)" : undefined,
+                }}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

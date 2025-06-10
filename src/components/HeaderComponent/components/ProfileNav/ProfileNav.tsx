@@ -46,7 +46,7 @@ const ProfileNav = () => {
         <img
           src={user?.profilePicture || "/avatar.jpg"}
           alt={user?.id}
-          className="h-8 w-8 rounded-full"
+          className="h-8 w-8 rounded-full object-cover"
         />
         <h1 className="max-w-12 overflow-ellipsis overflow-hidden line-clamp-1 text-xs ">
           {user?.firstName + " " + user?.lastName || "Unknown User"}
@@ -59,7 +59,7 @@ const ProfileNav = () => {
             <img
               src={user?.profilePicture || "/avatar.jpg"}
               alt={user?.id}
-              className="h-14 w-14 rounded-full"
+              className="h-14 w-14 rounded-full object-cover"
             />
             <div>
               <h1 className="text-md font-semibold">

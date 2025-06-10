@@ -5,11 +5,11 @@ import Divider from "@mui/material/Divider";
 
 const HeaderComponent = () => {
   return (
-    <header className="sticky top-0 z-40 border-b-1 border-gray-200 px-2 py-3">
+    <header className="sticky bg-white top-0 z-40 border-b-1 border-gray-200 px-2 py-3">
       <div className="container grid grid-cols-[1fr_auto] gap-4 relative items-center">
         <div className="grid grid-cols-[auto_1fr] items-center md:gap-4 gap-2">
             <nav aria-label="Home">
-                 <img src="/logo.png" alt="Logo" className="h-12 w-12 rounded-md" />
+                 <img src="/logo.png" alt="Logo" className="h-12 w-12 min-w-12 rounded-md" />
             </nav>
           <TextField
          

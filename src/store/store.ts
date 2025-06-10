@@ -5,10 +5,12 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { useDispatch, useSelector, type TypedUseSelectorHook } from 'react-redux'; 
 import authSlide from './authSlice';
 import userProfile from './userProfile';
+import networkingSlide from './networkingSlide';
 
 const rootReducer = combineReducers({
   auth: authSlide,
   userProfile: userProfile,
+  networking: networkingSlide,
 });
 
 
