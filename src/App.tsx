@@ -14,6 +14,10 @@ import Profile from "./features/auth/pages/Profile/Profile";
 import Networking from "./features/networking/pages/Networking/Networking";
 import Invitations from "./features/networking/pages/Invitations/Invitations";
 import Connections from "./features/networking/pages/Connections/Connections";
+import Messaging from "./features/messaging/pages/Messaging/Messaging";
+import ConversationDefault from "./features/messaging/pages/ConversationDefault/ConversationDefault";
+import Conversation from "./features/messaging/pages/Conversation/Conversation";
+
 
 function App() {
   return (
@@ -26,6 +30,11 @@ function App() {
               <Route path="/networking" element={<Networking />}>
                 <Route path="invitations" element={<Invitations />} />
                 <Route path="connections" element={<Connections />} />
+              </Route>
+              <Route path="/messaging" element={<Messaging />} >
+                <Route index element={<ConversationDefault />} />
+                <Route path="conversations/:conversationId" element={<Conversation />} />  
+                <Route path="conversations/new/:recipientId" element={<Conversation />} />  
               </Route>
             </Route>
             <Route path="/auth" element={<AuthLayout />}>

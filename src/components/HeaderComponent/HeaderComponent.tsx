@@ -17,7 +17,7 @@ const HeaderComponent = () => {
           variant="outlined"
           size="small"
           placeholder="Search..."
-          className="md:w-96"
+          className="md:w-70"
         />
         </div>
         <div className="grid grid-cols-[auto_auto_auto] items-center gap-2 md:gap-4">

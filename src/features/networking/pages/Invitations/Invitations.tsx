@@ -85,7 +85,7 @@ const Invitations = () => {
       <Divider />
       <div className="p-4 flex gap-4">
         <button
-          className={`px-2 py-1 rounded-full text-sm ${
+          className={`px-2 py-1 rounded-full cursor-pointer text-sm ${
             !sent
               ? "bg-[var(--primary-color)] text-white"
               : "bg-[var(--secondary-color)] text-white"
@@ -95,7 +95,7 @@ const Invitations = () => {
           Received
         </button>
         <button
-          className={`px-2 py-1 rounded-full text-sm ${
+          className={`px-2 py-1 rounded-full cursor-pointer text-sm ${
             sent
               ? "bg-[var(--primary-color)] text-white"
               : "bg-[var(--secondary-color)] text-white"
