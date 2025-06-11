@@ -6,11 +6,13 @@ import { useDispatch, useSelector, type TypedUseSelectorHook } from 'react-redux
 import authSlide from './authSlice';
 import userProfile from './userProfile';
 import networkingSlide from './networkingSlide';
+import messagingSlide from  './messagingSlide';
 
 const rootReducer = combineReducers({
   auth: authSlide,
   userProfile: userProfile,
   networking: networkingSlide,
+  messaging: messagingSlide,
 });
 
 

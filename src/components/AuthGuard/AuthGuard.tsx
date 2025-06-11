@@ -6,7 +6,7 @@ import Loading from "../Loading/Loading";
 
 const AuthGuard = () => {
   const dispatch = useAppDispatch();
-  const { user, status, error } = useAppSelector((state) => state.auth);
+  const { user, status } = useAppSelector((state) => state.auth);
   const location = useLocation();
 
   const isOnAuthPage = [
@@ -21,14 +21,14 @@ const AuthGuard = () => {
     }
   }, [dispatch, location.pathname]);
 
-  if (status.fetchUser === "loading") {
+  if (status.fetchUser === "loading" || status.fetchUser === "idle") {
     return <Loading/>;
   }
   
 
   // Chưa login
   if (!user && !isOnAuthPage) {
-    return <Navigate to="/auth/login" state={{ from: location.pathname }} />;
+    return <Navigate to="/auth/login" state={{ from: location.pathname + location.search }} />;
   }
 
   // Email chưa verify
@@ -49,7 +49,7 @@ const AuthGuard = () => {
 
   // Truy cập trang / khi đã login
   if (user && isOnAuthPage) {
-    return <Navigate to={location.state?.from || '/'} />;
+    return <Navigate to={location.state?.from  || '/'} />;
   }
 
   return <Outlet />;

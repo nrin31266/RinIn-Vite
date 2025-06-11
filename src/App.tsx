@@ -34,7 +34,6 @@ function App() {
               <Route path="/messaging" element={<Messaging />} >
                 <Route index element={<ConversationDefault />} />
                 <Route path="conversations/:conversationId" element={<Conversation />} />  
-                <Route path="conversations/new/:recipientId" element={<Conversation />} />  
               </Route>
             </Route>
             <Route path="/auth" element={<AuthLayout />}>

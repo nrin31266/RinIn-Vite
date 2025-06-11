@@ -1,10 +1,13 @@
 import React from 'react'
-import { Outlet, useParams } from 'react-router-dom'
+import { Outlet, useParams, useSearchParams } from 'react-router-dom'
 import MessagingLeftBar from '../../components/MessagingLeftBar/MessagingLeftBar'
 
 const Messaging = () => {
   const {conversationId} = useParams()
-  const isConversationSelected = Boolean(conversationId);
+  const [searchParams] = useSearchParams();
+  const recipientId = searchParams.get('recipientId')
+
+  const isConversationSelected = Boolean(conversationId || recipientId);
 
 
 

@@ -1,4 +1,4 @@
-import { createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { IUser } from "./authSlice";
 import { fetchConnections, type IConnection } from "./networkingSlide";
 import { extractErrorMessage } from "./utils";
@@ -23,13 +23,14 @@ export interface IConversation {
 export interface ICheckConversation{
     isConversationExists: boolean;
     receiver: IUser | null;
+    conversationId: string | null;
 }
 
 interface IMessagingState {
   conversation: IConversation | null;
   conversations: IConversation[];
-  connections: IConnection[];
   checkConversation: ICheckConversation | null;
+  recipient: IUser | null;
 
   status: {
     fetchConversations: "idle" | "loading" | "succeeded" | "failed";
@@ -46,8 +47,8 @@ interface IMessagingState {
 const initialState: IMessagingState = {
   conversation: null,
   conversations: [],
-  connections: [],
   checkConversation: null,
+  recipient: null,
   status: {
     fetchConversations: "idle",
     fetchConversation: "idle",
@@ -103,3 +104,55 @@ export const checkConversation = createAsyncThunk<ICheckConversation, string>(
     }
   }
 );
+
+
+const messagingSlice = createSlice({
+  name: "messaging",
+  initialState,
+  reducers: {
+    setRecipient: (state, action) => {
+      state.recipient = action.payload;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchConversations.pending, (state) => {
+        state.status.fetchConversations = "loading";
+        state.error.fetchConversations = null;
+      })
+      .addCase(fetchConversations.fulfilled, (state, action) => {
+        state.status.fetchConversations = "succeeded";
+        state.conversations = action.payload;
+      })
+      .addCase(fetchConversations.rejected, (state, action) => {
+        state.status.fetchConversations = "failed";
+        state.error.fetchConversations = action.payload as string;
+      })
+      .addCase(fetchConversation.pending, (state) => {
+        state.status.fetchConversation = "loading";
+        state.error.fetchConversation = null;
+      })
+      .addCase(fetchConversation.fulfilled, (state, action) => {
+        state.status.fetchConversation = "succeeded";
+        state.conversation = action.payload;
+      })
+      .addCase(fetchConversation.rejected, (state, action) => {
+        state.status.fetchConversation = "failed";
+        state.error.fetchConversation = action.payload as string;
+      })
+      .addCase(checkConversation.pending, (state) => {
+        state.status.checkConversation = "loading";
+        state.error.checkConversation = null;
+      })
+      .addCase(checkConversation.fulfilled, (state, action) => {
+        state.status.checkConversation = "succeeded";
+        state.checkConversation = action.payload;
+      })
+      .addCase(checkConversation.rejected, (state, action) => {
+        state.status.checkConversation = "failed";
+        state.error.checkConversation = action.payload as string;
+      });
+  },
+});
+export const { setRecipient } = messagingSlice.actions;
+export default messagingSlice.reducer;
