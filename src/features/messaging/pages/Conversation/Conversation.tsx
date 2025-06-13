@@ -8,16 +8,18 @@ import {
 } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../../store/store";
 import {
+  addMessageToConversation,
   checkConversation,
+  createConversation,
   fetchConversation,
   setRecipient,
+  type IMessageDto,
 } from "../../../../store/messagingSlide";
 import CircularProgress from "@mui/material/CircularProgress";
-import { fetchConnections } from "../../../../store/networkingSlide";
-import type { IUser } from "../../../../store/authSlice";
 import ConversationHeader from "../../components/ConversationHeader/ConversationHeader";
 import ConversationBody from "../../components/ConversationBody/ConversationBody";
 import ConversationBottom from "../../components/ConversationBottom/ConversationBottom";
+import type { IUser } from "../../../../store/authSlice";
 
 const Conversation = () => {
   const { conversationId } = useParams();
@@ -27,6 +29,7 @@ const Conversation = () => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const { status } = useAppSelector((state) => state.messaging);
+  const { conversation } = useAppSelector((state) => state.messaging);
 
   // if (conversationId === "new" && !recipientId) {
   //   return <Navigate to="/messaging" replace />;
@@ -49,14 +52,22 @@ const Conversation = () => {
       dispatch(fetchConversation(conversationId))
         .unwrap()
         .then((data) => {
-          dispatch(setRecipient(
-            data.author.id === user?.id ? data.recipient : data.author
-          ));
+          const recipient= {
+            id: data.otherUserId,
+            lastName: data.otherUserLastName || "",
+            firstName: data.otherUserFirstName || "",
+            profilePicture: data.otherUserProfilePictureUrl || "",
+            position: data.otherUserPosition || "",
+            company: data.otherUserCompany || "",
+          }
+          dispatch(
+            setRecipient(
+              recipient as IUser
+            )
+          );
         });
     }
   }, [conversationId, recipientId]);
-
-
 
   return status.checkConversation === "loading" ||
     status.fetchConversation === "loading" ? (
@@ -64,10 +75,38 @@ const Conversation = () => {
       <CircularProgress size={48} color="primary" />
     </div>
   ) : (
-    <div className="grid grid-rows-[auto_1fr_auto] max-h-[calc(100vh-6rem)] h-full">
-      <div className="border-b border-gray-200 h-[4rem]"><ConversationHeader/></div>
-      <div className="overflow-auto"><ConversationBody/></div>
-      <ConversationBottom/>
+    <div className="grid grid-rows-[auto_1fr_auto] max-h-[calc(100vh-6rem)] h-[calc(100vh-6rem)]">
+      <div className="border-b border-gray-200 h-[4.05rem]">
+        <ConversationHeader />
+      </div>
+
+      <ConversationBody />
+
+      <ConversationBottom
+        onSendMessage={async (message) => {
+          if (!conversation?.conversationId && !recipientId) {
+            return;
+          }
+          const messageDto: IMessageDto = {
+            receiverId: recipientId
+              ? parseInt(recipientId)
+              : conversation?.otherUserId!!,
+            content: message,
+          };
+
+          if (conversationId === "new" && recipientId) {
+            await dispatch(createConversation(messageDto))
+              .unwrap()
+              .then((data) => {
+                navigate(`/messaging/conversations/${data.conversationId}`);
+              });
+          } else if (conversationId && conversationId !== "new") {
+            await dispatch(
+              addMessageToConversation({ conversationId, message: messageDto })
+            ).unwrap();
+          }
+        }}
+      />
     </div>
   );
 };

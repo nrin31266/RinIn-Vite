@@ -1,16 +1,22 @@
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
 import React, { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const ConversationBottom = () => {
+interface ConversationBottomProps {
+  // Define any props if needed
+  onSendMessage: (message: string) => void;
+}
+
+const ConversationBottom: React.FC<ConversationBottomProps> = ({ onSendMessage }) => {
   const [message, setMessage] = useState("");
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
+  const navigate = useNavigate();
   const defaultHeight = 44;
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
-    setMessage("");
     console.log("Message sent:", message);
+    onSendMessage(message);
+    setMessage("");
     
     if (messageInputRef.current) {
       messageInputRef.current.style.height = defaultHeight + "px"; // reset height after sending

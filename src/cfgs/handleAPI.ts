@@ -7,7 +7,7 @@ interface RequestParams<B = unknown> {
   body?: B;
   method?: "post" | "get" | "delete" | "put";
   isAuth?: boolean;
-  params?: string | Record<string, string>;
+  params?: string | Record<string, any>;
 }
 
 interface IApiResponse<T> {

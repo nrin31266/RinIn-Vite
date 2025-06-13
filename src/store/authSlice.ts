@@ -4,7 +4,7 @@ import { extractErrorMessage } from "./utils";
 import { updateUserProfile } from "./userProfile";
 
 export interface IUser {
-  id: string;
+  id: number;
   email: string;
   emailVerified: boolean;
   firstName?: string;
