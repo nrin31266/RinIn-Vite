@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../store/store";
-import { loadMoreMessages, resetMessages, setMessages } from "../../../../store/messagingSlide";
+import { loadMoreMessages, markConversationAsRead, resetMessages, setMessages, updateConversationParticipant, type IConversationParticipant } from "../../../../store/messagingSlide";
 import MessageItem from "../MessageItem/MessageItem";
 import { useParams } from "react-router-dom";
 import { useWebSocket } from "../../../ws/WebSocketProvider";
@@ -28,6 +28,31 @@ const ConversationBody = () => {
 
     return () => subscription.unsubscribe?.();
   }, [conversationId, user?.id, ws]);
+
+  useEffect(() => {
+    if (!conversationId || !user?.id || !ws || conversationId === "new" || !conversation) return;
+    const subscription = ws.subscribe(
+      `/topic/conversations/${conversationId}/read`,
+      (res) => {
+        const data: IConversationParticipant = JSON.parse(res.body);
+        // Cập nhật lại thông tin người tham gia
+        dispatch(updateConversationParticipant({ conversationId, participant: data, authId: user.id }));
+      }
+    );
+
+    return () => subscription.unsubscribe?.();
+  }, [conversationId, user?.id, ws]);
+
+  useEffect(() => {
+  if (!conversationId || !user?.id || messages.content.length === 0 || conversationId === "new" || conversationId !== loadedRef.current) return;
+
+  const lastMessage = messages.content[0];
+    const myLastReadAt = conversation?.myLastReadAt ? new Date(conversation.myLastReadAt) : -Infinity;
+  if (lastMessage?.sender.id !== user.id && myLastReadAt < new Date(lastMessage.createdAt)) {
+    dispatch(markConversationAsRead(conversationId));
+  }
+}, [conversationId, messages, user?.id]);
+
 
   
 

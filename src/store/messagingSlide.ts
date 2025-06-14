@@ -51,6 +51,7 @@ export interface IConversationDetailsDto {
   otherUserProfilePictureUrl: string | null
   otherUserPosition: string | null
   otherUserCompany: string | null
+  myLastReadAt: string | null
   participants: IConversationParticipant[]
 }
 export interface IConversationParticipant {
@@ -271,6 +272,14 @@ const messagingSlice = createSlice({
     setMessages: (state, action: PayloadAction<{newMessage: IMessage, authId: number}>) => {
       const message = action.payload.newMessage;
       state.messages.content = [message, ...state.messages.content];
+    },
+    updateConversationParticipant: (state, action: PayloadAction<{ conversationId: string; participant: IConversationParticipant, authId: number }>) => {
+      const { conversationId, participant } = action.payload;
+      const index = state.conversation?.participants.findIndex(p => p.id === participant.id);
+      if ( index != -1 && index !== undefined) {
+        state.conversation!.participants[index] = participant; // Cập nhật thông tin người tham gia
+        console.log("Updated participant:", participant);
+      }
     }
   },
   extraReducers: (builder) => {
@@ -353,16 +362,18 @@ const messagingSlice = createSlice({
         state.error.addMessageToConversation = action.payload as string;
       }).addCase(markConversationAsRead.pending, (state) => {
         state.status.markConversationAsRead = "loading";
+        state.error.markConversationAsRead = null;
       })
       .addCase(markConversationAsRead.fulfilled, (state, action) => {
         state.status.markConversationAsRead = "succeeded";
-        const conversationId = action.meta.arg;
-        const index = state.conversations.findIndex(conv => conv.conversationId === Number(conversationId));
-        if (index !== -1) {
-          const updatedConversation = state.conversations[index];
-          updatedConversation.unreadCount = 0;
-          state.conversations[index] = updatedConversation;
-        }
+        // Bỏ vì đã có web socket cập nhật
+        // const conversationId = action.meta.arg;
+        // const index = state.conversations.findIndex(conv => conv.conversationId === Number(conversationId));
+        // if (index !== -1) {
+        //   const updatedConversation = state.conversations[index];
+        //   updatedConversation.unreadCount = 0;
+        //   state.conversations[index] = updatedConversation;
+        // }
       })
       .addCase(markConversationAsRead.rejected, (state, action) => {
         state.status.markConversationAsRead = "failed";
@@ -388,5 +399,5 @@ const messagingSlice = createSlice({
       });}
 });
 
-export const { setRecipient, resetMessages, setConversations, setMessages } = messagingSlice.actions;
+export const { setRecipient, resetMessages, setConversations, setMessages, updateConversationParticipant } = messagingSlice.actions;
 export default messagingSlice.reducer;
