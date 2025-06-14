@@ -17,7 +17,7 @@ const ConversationItem = ({conversation} : {conversation : IConversationDto}) =>
       </div>
       <div>
         <h1 className='text-sm font-bold text-gray-800'>{conversation.otherUserName}</h1>
-        <p className={`text-xs ${conversation.unreadCount > 0 ? "font-bold" : "text-gray-600 line-clamp-1 overflow-ellipsis"}`}>{conversation.lastMessageContent || "No messages yet"}</p>
+        <p className={` line-clamp-1 overflow-ellipsis text-xs ${conversation.unreadCount > 0 ? "font-bold" : "text-gray-600"}`}>{conversation.lastMessageContent || "No messages yet"}</p>
       </div>
       {conversation.unreadCount > 0 && (
         <div className='absolute top-1/2 -translate-y-1/2 right-2 bg-[var(--primary-color)] text-white text-xs font-bold w-3 h-3 p-3 rounded-full flex items-center justify-center'>

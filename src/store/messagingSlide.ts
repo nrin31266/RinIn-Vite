@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import handleAPI from "../cfgs/handleAPI";
 import type { IPageableDto } from "../types";
 import type { IUser } from "./authSlice";
@@ -36,6 +36,7 @@ export interface IConversationDto {
   lastMessageId: number | null
   lastMessageContent: string | null
   lastMessageCreatedAt: string | null
+  lastMessageSenderId: number | null
   unreadCount: number
 }
 
@@ -245,6 +246,31 @@ const messagingSlice = createSlice({
         hasMore: false,
       };
       state.status.loadMessages = "idle";
+    },
+    setConversations: (state, action: PayloadAction<{ conversation: IConversationDto, authId: number }>) => {
+      const c = action.payload.conversation;
+      const index = state.conversations.findIndex(conv => conv.conversationId === c.conversationId);
+      if (index !== -1) {
+        const oldC = state.conversations[index];
+        state.conversations.splice(index, 1); // Xóa cuộc trò chuyện cũ
+        if (c.lastMessageSenderId !== Number(action.payload.authId)) {
+          c.unreadCount = (oldC.unreadCount || 0) + 1; // Tăng số lượng tin nhắn chưa đọc nếu người gửi không phải là người dùng hiện tại
+        }else{
+          c.unreadCount = 0; // Nếu người gửi là người dùng hiện tại, không tăng số lượng tin nhắn chưa đọc
+        }
+        state.conversations.unshift(c); // Thêm cuộc trò chuyện mới vào đầu danh sách
+      }else{
+        if (c.lastMessageSenderId !== Number(action.payload.authId)) {
+          c.unreadCount = 1; // Tăng số lượng tin nhắn chưa đọc nếu người gửi không phải là người dùng hiện tại
+        }else{
+          c.unreadCount = 0; // Nếu người gửi là người dùng hiện tại, không tăng số lượng tin nhắn chưa đọc
+        }
+        state.conversations.unshift(c);
+      }
+    },
+    setMessages: (state, action: PayloadAction<{newMessage: IMessage, authId: number}>) => {
+      const message = action.payload.newMessage;
+      state.messages.content = [message, ...state.messages.content];
     }
   },
   extraReducers: (builder) => {
@@ -293,8 +319,9 @@ const messagingSlice = createSlice({
       })
       .addCase(createConversation.fulfilled, (state, action) => {
         state.status.createConversation = "succeeded";
-        const newConv = action.payload;
-        state.conversations = [newConv, ...state.conversations];
+        // Bỏ vì đã có web socket cập nhật
+        // const newConv = action.payload;
+        // state.conversations = [newConv, ...state.conversations];
       })
       .addCase(createConversation.rejected, (state, action) => {
         state.status.createConversation = "failed";
@@ -306,19 +333,20 @@ const messagingSlice = createSlice({
       })
       .addCase(addMessageToConversation.fulfilled, (state, action) => {
         state.status.addMessageToConversation = "succeeded";
-        const message = action.payload;
-        state.messages.content = [message, ...state.messages.content];
-        const conversationId = action.meta.arg.conversationId;
-        const index = state.conversations.findIndex(conv => conv.conversationId === Number(conversationId));
-        if (index !== -1) {
-          const updatedConversation = state.conversations[index];
-          state.conversations.splice(index, 1);
-          updatedConversation.lastMessageId = message.id;
-          updatedConversation.lastMessageContent = message.content;
-          updatedConversation.lastMessageCreatedAt = message.createdAt;
-          updatedConversation.unreadCount = 0; // Reset unread count when a new message is added
-          state.conversations.unshift(updatedConversation);
-        }
+        // Bỏ vì đã có web socket cập nhật
+        // const message = action.payload;
+        // state.messages.content = [message, ...state.messages.content];
+        // const conversationId = action.meta.arg.conversationId;
+        // const index = state.conversations.findIndex(conv => conv.conversationId === Number(conversationId));
+        // if (index !== -1) {
+        //   const updatedConversation = state.conversations[index];
+        //   state.conversations.splice(index, 1);
+        //   updatedConversation.lastMessageId = message.id;
+        //   updatedConversation.lastMessageContent = message.content;
+        //   updatedConversation.lastMessageCreatedAt = message.createdAt;
+        //   updatedConversation.unreadCount = 0; // Reset unread count when a new message is added
+        //   state.conversations.unshift(updatedConversation);
+        // }
       })
       .addCase(addMessageToConversation.rejected, (state, action) => {
         state.status.addMessageToConversation = "failed";
@@ -360,5 +388,5 @@ const messagingSlice = createSlice({
       });}
 });
 
-export const { setRecipient, resetMessages } = messagingSlice.actions;
+export const { setRecipient, resetMessages, setConversations, setMessages } = messagingSlice.actions;
 export default messagingSlice.reducer;

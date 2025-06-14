@@ -4,12 +4,17 @@ import type { IMessage } from '../../../../store/messagingSlide'
 import type { IUser } from '../../../../store/authSlice'
 import { useAppDispatch, useAppSelector } from '../../../../store/store'
 import { DateUtils } from '../../../../utils/dateUtils'
+import { useWebSocket } from '../../../ws/WebSocketProvider'
 
 const MessageItem = ({message} : {message: IMessage}) => {
   const {user} = useAppSelector((state) => state.auth)
   const isSender = message.sender.id === user?.id;
   const {conversation} = useAppSelector((state) => state.messaging)
+  const dispatch = useAppDispatch();
+  const ws = useWebSocket();
   if (!message || !conversation) return null;
+
+  
 
   return (
      <div className={`flex space-x-2 ${isSender ? 'justify-end' : 'justify-start'} w-full`}>

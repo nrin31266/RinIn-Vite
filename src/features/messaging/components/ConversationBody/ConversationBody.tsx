@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../store/store";
-import { loadMoreMessages, resetMessages } from "../../../../store/messagingSlide";
+import { loadMoreMessages, resetMessages, setMessages } from "../../../../store/messagingSlide";
 import MessageItem from "../MessageItem/MessageItem";
 import { useParams } from "react-router-dom";
+import { useWebSocket } from "../../../ws/WebSocketProvider";
 
 const ConversationBody = () => {
   const dispatch = useAppDispatch();
@@ -12,6 +13,21 @@ const ConversationBody = () => {
   );
   const containerRef = useRef<HTMLDivElement>(null);
   const isLoadingRef = useRef(false);
+  const ws = useWebSocket();
+  const { user } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (!conversationId || !user?.id || !ws || conversationId === "new") return;
+    const subscription = ws.subscribe(
+      `/topic/users/${user.id}/conversations/${conversationId}/messages`,
+      (res) => {
+        const data = JSON.parse(res.body);
+        dispatch(setMessages({ newMessage: data, authId: user.id }));
+      }
+    );
+
+    return () => subscription.unsubscribe?.();
+  }, [conversationId, user?.id, ws]);
 
   
 
@@ -44,7 +60,7 @@ useEffect(() => {
     dispatch(resetMessages());
     loadedRef.current = conversationId;
     setHasLoaded(true);
-  } else if (conversationId && loadedRef.current === conversationId && hasLoaded) {
+  } else if (conversationId && loadedRef.current === conversationId && hasLoaded && loadedRef.current !== "new") {
     // Nếu conversationId đã được tải, không cần reset
     loadMore(false);
   }
@@ -144,18 +160,19 @@ useEffect(() => {
   })
 
   return (
-    <div key={message.id} className="relative">
+    <div key={message.id + message.createdAt} className="relative">
       <MessageItem message={message} />
 
       {seenParticipants.length > 0 && (
         <div className="flex flex-row-reverse mt-1 gap-1">
           {seenParticipants.map((p) => (
             <img
+              id={p.id.toString()}
               key={p.id}
               src={p.user.profilePicture || "/avatar.jpg"}
               alt={p.user.firstName}
               title={`${p.user.firstName} đã xem`}
-              className="w-5 h-5 rounded-full border border-white shadow"
+              className="w-5 h-5 rounded-full border border-white shadow object-cover"
             />
           ))}
         </div>

@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../../store/store";
 import IconButton from "@mui/material/IconButton";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 const ConversationHeader = () => {
   const { conversationId } = useParams();
   const [searchParams] = useSearchParams();
@@ -13,7 +14,12 @@ const ConversationHeader = () => {
   const { recipient } = useAppSelector((state) => state.messaging);
 
   return (
-    <div className="grid grid-cols-[auto_1fr_auto] gap-4 items-center px-4 border-gray-200 h-full">
+    <div className="grid lg:grid-cols-[auto_1fr_auto] grid-cols-[auto_auto_1fr_auto] gap-4 items-center px-4 border-gray-200 h-full">
+      <div className="lg:hidden block">
+        <IconButton onClick={() => navigate("/messaging")}>
+        <ChevronLeftIcon />
+      </IconButton>
+      </div>
       <img
         src={recipient?.profilePicture || "/avatar.jpg"}
         alt=""
