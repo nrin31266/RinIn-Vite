@@ -61,6 +61,17 @@ export interface IConversationParticipant {
   lastReadAt: string
 }
 
+export interface IParticipantDto {
+  id: number
+  conversationId: number
+  user: IUser
+  unreadCount: number
+  lastReadAt: string
+  conversationIsGroup: boolean | null
+  otherParticipantId: number | null
+  lastReadAtForOtherParticipant: string | null
+}
+
 
 export interface IMessageDto{
   receiverId: number;
@@ -273,13 +284,33 @@ const messagingSlice = createSlice({
       const message = action.payload.newMessage;
       state.messages.content = [message, ...state.messages.content];
     },
-    updateConversationParticipant: (state, action: PayloadAction<{ conversationId: string; participant: IConversationParticipant, authId: number }>) => {
-      const { conversationId, participant } = action.payload;
-      const index = state.conversation?.participants.findIndex(p => p.id === participant.id);
-      if ( index != -1 && index !== undefined) {
-        state.conversation!.participants[index] = participant; // Cập nhật thông tin người tham gia
-        console.log("Updated participant:", participant);
+    updateConversationParticipant: (state, action: PayloadAction<{ conversationId: string; participantDto: IParticipantDto, authId: number }>) => {
+      if (!state.conversation) return;
+      const { conversationId, participantDto } = action.payload;
+      const index = state.conversation.participants.findIndex(p => p.id === participantDto.id);
+      if ( index != -1) {
+        state.conversation.participants[index] = participantDto; // Cập nhật thông tin người tham gia
+        console.log("Updated participant:", participantDto);
+      }else if (participantDto.conversationIsGroup !== true && participantDto.otherParticipantId){
+        
+        const indexOtherParticipant = state.conversation.participants.findIndex(p=> p.id === participantDto.otherParticipantId);
+        
+        if ( indexOtherParticipant != -1 && participantDto.lastReadAtForOtherParticipant) {
+          state.conversation.participants[indexOtherParticipant].lastReadAt = participantDto.lastReadAtForOtherParticipant;
+        }
       }
+      
+    },
+    updateConversationsAsRead: (state, action: PayloadAction<{ participantDto: IParticipantDto, authId: number }>) => {
+      const { authId, participantDto} = action.payload
+      if(authId !== participantDto.user.id) return; // ko phải n đọc
+        const index = state.conversations.findIndex((c)=> c.conversationId === participantDto.conversationId);
+        if (index != null){
+          
+          const updateConversation = state.conversations[index];
+          updateConversation.unreadCount = 0;
+          state.conversations[index] = updateConversation;
+        }
     }
   },
   extraReducers: (builder) => {
@@ -399,5 +430,5 @@ const messagingSlice = createSlice({
       });}
 });
 
-export const { setRecipient, resetMessages, setConversations, setMessages, updateConversationParticipant } = messagingSlice.actions;
+export const { setRecipient, resetMessages, setConversations, setMessages, updateConversationParticipant, updateConversationsAsRead } = messagingSlice.actions;
 export default messagingSlice.reducer;

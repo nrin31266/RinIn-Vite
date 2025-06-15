@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../store/store";
-import { loadMoreMessages, markConversationAsRead, resetMessages, setMessages, updateConversationParticipant, type IConversationParticipant } from "../../../../store/messagingSlide";
+import { loadMoreMessages, markConversationAsRead, resetMessages, setMessages, updateConversationParticipant, type IConversationParticipant, type IParticipantDto } from "../../../../store/messagingSlide";
 import MessageItem from "../MessageItem/MessageItem";
 import { useParams } from "react-router-dom";
 import { useWebSocket } from "../../../ws/WebSocketProvider";
@@ -34,9 +34,10 @@ const ConversationBody = () => {
     const subscription = ws.subscribe(
       `/topic/conversations/${conversationId}/read`,
       (res) => {
-        const data: IConversationParticipant = JSON.parse(res.body);
+        const data: IParticipantDto = JSON.parse(res.body);
+        console.log(data)
         // Cập nhật lại thông tin người tham gia
-        dispatch(updateConversationParticipant({ conversationId, participant: data, authId: user.id }));
+        dispatch(updateConversationParticipant({ conversationId, participantDto: data, authId: user.id }));
       }
     );
 

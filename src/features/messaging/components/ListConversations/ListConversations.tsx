@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useAppDispatch, useAppSelector } from './../../../../store/store';
-import { fetchConversations, setConversations, type IConversationDto } from '../../../../store/messagingSlide';
+import { fetchConversations, setConversations, updateConversationsAsRead, type IConversationDto, type IParticipantDto } from '../../../../store/messagingSlide';
 import ConversationItem from '../ConversationItem/ConversationItem';
 import { useWebSocket } from '../../../ws/WebSocketProvider';
 
@@ -20,6 +20,18 @@ const ListConversations = () => {
 
   return () => subscription.unsubscribe?.();
 }, [ws, user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || !ws) return
+    const subscription = ws.subscribe(`/topic/users/${user.id}/conversations/read`, (res)=>{
+      const data : IParticipantDto = JSON.parse(res.body);
+      console.log("hihihihihihi")
+      dispatch(updateConversationsAsRead({participantDto: data, authId: user.id}));
+    });
+    return ()=> subscription.unsubscribe();
+  }, [ws, user?.id]);
+
+
 
 
   useEffect(() => {
