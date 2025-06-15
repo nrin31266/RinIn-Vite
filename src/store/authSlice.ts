@@ -14,6 +14,7 @@ export interface IUser {
   location?: string;
   profileComplete: boolean;
   profilePicture?: string;
+  lastLogin?: string;
 }
 
 export interface ILoginRes {

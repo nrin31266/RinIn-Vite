@@ -1,5 +1,5 @@
 export class DateUtils {
-  public static timeAgo(date: Date) {
+  public static timeAgo(date: Date, hasAgo: boolean = true): string {
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
@@ -15,10 +15,10 @@ export class DateUtils {
     for (const unit of units) {
       const count = Math.floor(seconds / unit.seconds);
       if (count >= 1) {
-        return `${count}${unit.name} ago`;
+        return `${count}${unit.name}${hasAgo ? " ago" : ""}`;
       }
     }
 
-    return "just now"; // fallback cho case mới xảy ra
+    return `just ${hasAgo ? "now" : ""}` ; // fallback cho case mới xảy ra
   }
 }

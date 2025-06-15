@@ -266,12 +266,19 @@ const messagingSlice = createSlice({
         const oldC = state.conversations[index];
         state.conversations.splice(index, 1); // Xóa cuộc trò chuyện cũ
         if (c.lastMessageSenderId !== Number(action.payload.authId)) {
-          c.unreadCount = (oldC.unreadCount || 0) + 1; // Tăng số lượng tin nhắn chưa đọc nếu người gửi không phải là người dùng hiện tại
+          oldC.unreadCount = (oldC.unreadCount || 0) + 1; // Tăng số lượng tin nhắn chưa đọc nếu người gửi không phải là người dùng hiện tại
+          oldC.lastMessageId = c.lastMessageId; // Cập nhật ID tin nhắn cuối cùng
+          oldC.lastMessageContent = c.lastMessageContent; // Cập nhật nội dung tin nhắn cuối cùng
+          oldC.lastMessageCreatedAt = c.lastMessageCreatedAt; // Cập nhật thời gian tin nhắn cuối cùng
+          oldC.lastMessageSenderId = c.lastMessageSenderId; // Cập nhật ID người gửi tin nhắn cuối cùng
+          state.conversations.unshift(oldC);
         }else{
           c.unreadCount = 0; // Nếu người gửi là người dùng hiện tại, không tăng số lượng tin nhắn chưa đọc
+           state.conversations.unshift(c); // Thêm cuộc trò chuyện mới vào đầu danh sách
         }
-        state.conversations.unshift(c); // Thêm cuộc trò chuyện mới vào đầu danh sách
+       
       }else{
+        // Nếu cuộc trò chuyện không tồn tại, thêm mới vào đầu danh sách
         if (c.lastMessageSenderId !== Number(action.payload.authId)) {
           c.unreadCount = 1; // Tăng số lượng tin nhắn chưa đọc nếu người gửi không phải là người dùng hiện tại
         }else{

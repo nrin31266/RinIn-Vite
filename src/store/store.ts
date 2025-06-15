@@ -7,12 +7,14 @@ import authSlide from './authSlice';
 import userProfile from './userProfile';
 import networkingSlide from './networkingSlide';
 import messagingSlide from  './messagingSlide';
+import onlineStatusSlice from './onlineUserStatusSlide'; // Uncomment if you need online status management
 
 const rootReducer = combineReducers({
   auth: authSlide,
   userProfile: userProfile,
   networking: networkingSlide,
   messaging: messagingSlide,
+  onlineStatus: onlineStatusSlice,
 });
 
 

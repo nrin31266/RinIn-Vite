@@ -26,7 +26,7 @@ const MessageItem = ({message} : {message: IMessage}) => {
           {!isSender && <h1 className="text-sm font-bold text-gray-800">
             {isSender ? user?.firstName : message.sender.firstName} {isSender ? user?.lastName : message.sender.lastName}
           </h1>}
-          <div className={`text-sm text-gray-600 border py-2 px-4 ${isSender ? 'bg-[var(--primary-color)] text-white rounded-[0.5rem_0.5rem_0rem_0.5rem]' :
+          <div className={`text-sm text-gray-600 border py-2 px-4 break-words ${isSender ? 'bg-[var(--primary-color)] text-white rounded-[0.5rem_0.5rem_0rem_0.5rem]' :
              'bg-gray-400 text-white rounded-[0.5rem_0.5rem_0.5rem_0rem]'}`}>
               <p>{message.content}</p>
               <div className='flex items-center justify-between mt-1'>

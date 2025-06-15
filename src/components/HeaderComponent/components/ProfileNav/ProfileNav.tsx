@@ -3,11 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../../../../store/authSlice";
 import { useAppDispatch, useAppSelector } from "../../../../store/store";
+import { useWebSocket } from "../../../../features/ws/WebSocketProvider";
 const ProfileNav = () => {
   const { user } = useAppSelector((state) => state.auth);
   const location = useLocation();
   const [showProfileNav, setShowProfileNav] = useState(false);
   const dispatch = useAppDispatch();
+  const ws = useWebSocket();
   const navigate = useNavigate();
     // refs để check click ngoài
       const isProfileOpenRef = useRef(showProfileNav);
@@ -45,7 +47,7 @@ const ProfileNav = () => {
       >
         <img
           src={user?.profilePicture || "/avatar.jpg"}
-          alt={user?.id}
+          alt={user?.id.toString() || "Unknown User"}
           className="h-8 w-8 rounded-full object-cover"
         />
         <h1 className="max-w-12 overflow-ellipsis overflow-hidden line-clamp-1 text-xs ">
@@ -58,7 +60,7 @@ const ProfileNav = () => {
           <div className="flex items-center gap-4">
             <img
               src={user?.profilePicture || "/avatar.jpg"}
-              alt={user?.id}
+              alt={user?.id.toString() || "Unknown User"}
               className="h-14 w-14 rounded-full object-cover"
             />
             <div>
@@ -80,6 +82,7 @@ const ProfileNav = () => {
               onClick={() => {
                 dispatch(logout());
                 navigate("/login", { state: { from: location.pathname } });
+                ws?.deactivate();
               }}
             >
               Logout

@@ -137,6 +137,16 @@ useEffect(() => {
     );
   }
 
+  if (
+    conversationId === "new"
+  ) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <h1 className="text-md text-gray-700">Start a new conversation</h1>
+      </div>
+    );
+  }
+
   if (!conversation) {
     return null;
   }
