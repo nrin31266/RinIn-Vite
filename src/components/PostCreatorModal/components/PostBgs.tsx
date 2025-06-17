@@ -8,7 +8,7 @@ import {
 // background-image: linear-gradient(135deg, rgba(234, 234, 234,0.06) 0%, rgba(234, 234, 234,0.06) 50%,rgba(169, 169, 169,0.06) 50%, rgba(169, 169, 169,0.06) 100%),linear-gradient(90deg, rgb(20,20,20),rgb(20,20,20)); background-size: 72px 72px;
 const PostBgs = () => {
   const dispatch = useAppDispatch();
-  const { postBgs, status, error, selectPostBgId } = useAppSelector(
+  const { postBgs, status, error, selectedPostBgId: selectPostBgId } = useAppSelector(
     (state) => state.postCreator
   );
   useEffect(() => {

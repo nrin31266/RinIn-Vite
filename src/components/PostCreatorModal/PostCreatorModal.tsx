@@ -1,22 +1,25 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
-import { close, setContent } from "../../store/postCreatorSlide";
+import { closePostCreatorModel, setPostContent } from "../../store/postCreatorSlide";
 import HighlightOffSharpIcon from "@mui/icons-material/HighlightOffSharp";
 import IconButton from "@mui/material/IconButton";
 import PostBgs from "./components/PostBgs";
+import PostTools from "./components/PostTools";
+import PostGrid from "./components/PostGrid";
 const PostCreatorModal = () => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const contentRef = useRef<HTMLTextAreaElement>(null);
-  const { postBgs, content, selectPostBgId } = useAppSelector(
+  const { postBgs, content, selectedPostBgId: selectPostBgId } = useAppSelector(
     (state) => state.postCreator
   );
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const selectedBg = postBgs.find((bg) => bg.id === selectPostBgId);
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Nếu click đúng vào backdrop (not content)
     if (e.target === e.currentTarget) {
-      dispatch(close());
+      // dispatch(close());
     }
   };
   const defaultHeight = 50; // Chiều cao mặc định của textarea
@@ -28,7 +31,7 @@ const PostCreatorModal = () => {
     >
       <div className="bg-white rounded-lg shadow-lg p-4 w-[min(100%,600px)] relative">
         <div className="absolute top-2 right-2">
-          <IconButton onClick={() => dispatch(close())}>
+          <IconButton onClick={() => dispatch(closePostCreatorModel())}>
             <HighlightOffSharpIcon />
           </IconButton>
         </div>
@@ -49,7 +52,7 @@ const PostCreatorModal = () => {
             </span>
           </div>
         </div>
-        <div className="min-h-[20rem] max-h-[40rem] overflow-auto">
+        <div className="min-h-[10rem] max-h-[30rem] overflow-auto">
           {selectedBg && content.length <= 130 ? (
             <div
               className="w-full min-h-[20rem]  rounded-md overflow-hidden flex items-center justify-center text-center p-4"
@@ -80,7 +83,7 @@ const PostCreatorModal = () => {
                   if (e.target.value.length > 130) {
                     newContent = e.target.value.slice(0, 130);
                   }
-                  dispatch(setContent({ content: newContent }));
+                  dispatch(setPostContent({ content: newContent }));
                 }}
                 onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
@@ -98,7 +101,7 @@ const PostCreatorModal = () => {
               rows={1}
               value={content}
               onChange={(e) =>
-                dispatch(setContent({ content: e.target.value }))
+                dispatch(setPostContent({ content: e.target.value }))
               }
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
@@ -107,9 +110,14 @@ const PostCreatorModal = () => {
               }}
             />
           )}
+          {
+            !selectPostBgId && selectedFiles.length > 0 ? <PostGrid files={selectedFiles} /> : null
+
+          }
         </div>
-        <div className="mt-4 flex flex-col gap-2">
-          <PostBgs />
+        <div className="mt-4 flex flex-col gap-4">
+          {content.length <= 130 && <PostBgs />}
+          <PostTools setFileSelected={setSelectedFiles} />
           <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50">
             Post
           </button>

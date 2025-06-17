@@ -1,6 +1,6 @@
 import Divider from "@mui/material/Divider";
 import { useAppDispatch, useAppSelector } from "../../../../store/store";
-import { open } from "../../../../store/postCreatorSlide";
+import { openPostCreatorModel } from "../../../../store/postCreatorSlide";
 
 export const FeedHeader = () => {
   const { user } = useAppSelector((state) => state.auth);
@@ -8,7 +8,7 @@ export const FeedHeader = () => {
 
     const handleCreatePost = () => {
         // Logic to open post creation modal
-        dispatch(open({ from: ""}));
+        dispatch(openPostCreatorModel({ from: ""}));
     }
 
   return (
@@ -19,7 +19,7 @@ export const FeedHeader = () => {
           alt={user?.id.toString()}
           className="w-10 h-10 rounded-full"
         />
-        <button onClick={handleCreatePost} className="ml-2 text-md text-gray-500 hover:text-gray-700 duration-300 hover:bg-gray-300 px-2 py-1.5 rounded-full bg-gray-100">
+        <button onClick={handleCreatePost} className="ml-2 text-xs sm:text-sm text-gray-500 hover:text-gray-700 duration-300 hover:bg-gray-300 px-2 py-1.5 rounded-full bg-gray-100">
           Hey {user?.lastName || "User"}. What are you thinking?
         </button>
       </div>

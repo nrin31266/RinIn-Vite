@@ -16,7 +16,8 @@ interface PostCreatorSlideState {
     content: string;
     from: string;
     postBgs: IPostBackground[];
-    selectPostBgId?: string;
+    selectedPostBgId?: string;
+    
     status: {
         fetchPostBackgrounds: 'idle' | 'loading' | 'succeeded' | 'failed';
     }
@@ -57,24 +58,25 @@ const postCreatorSlide = createSlice({
     name: 'postCreatorSlide',
     initialState,
     reducers: {
-        open: (state, action: PayloadAction<{ from?: string }>) => {
+        openPostCreatorModel: (state, action: PayloadAction<{ from?: string }>) => {
             state.isOpen = true;
             state.from = action.payload.from || '';
         },
-        close: (state) => {
+        closePostCreatorModel: (state) => {
             state.isOpen = false;
             state.content = '';
             state.from = '';
         },
-        setContent: (state, action: PayloadAction<{ content?: string }>) => {
+        setPostContent: (state, action: PayloadAction<{ content?: string }>) => {
             state.content = action.payload.content || '';
             if (state.content.length > 130){
-                state.selectPostBgId = undefined; // Reset selected background if content exceeds 300 characters
+                state.selectedPostBgId = undefined; // Reset selected background if content exceeds 130 characters
             }
         },
         setSelectPostBgId: (state, action: PayloadAction<{ selectPostBgId?: string }>) => {
-            state.selectPostBgId = action.payload.selectPostBgId;
+            state.selectedPostBgId = action.payload.selectPostBgId;
         },
+
     },
     extraReducers: (builder) => {
         builder
@@ -94,5 +96,5 @@ const postCreatorSlide = createSlice({
 
 });
 
-export const { open, close, setContent, setSelectPostBgId } = postCreatorSlide.actions;
+export const { openPostCreatorModel, closePostCreatorModel, setPostContent, setSelectPostBgId } = postCreatorSlide.actions;
 export default postCreatorSlide.reducer;
