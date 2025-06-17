@@ -8,6 +8,7 @@ import userProfile from './userProfile';
 import networkingSlide from './networkingSlide';
 import messagingSlide from  './messagingSlide';
 import onlineStatusSlice from './onlineUserStatusSlide'; // Uncomment if you need online status management
+import postCreatorSlide from './postCreatorSlide'; // Uncomment if you need post creation functionality
 
 const rootReducer = combineReducers({
   auth: authSlide,
@@ -15,6 +16,7 @@ const rootReducer = combineReducers({
   networking: networkingSlide,
   messaging: messagingSlide,
   onlineStatus: onlineStatusSlice,
+  postCreator: postCreatorSlide,
 });
 
 

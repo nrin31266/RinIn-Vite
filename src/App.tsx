@@ -17,6 +17,7 @@ import Connections from "./features/networking/pages/Connections/Connections";
 import Messaging from "./features/messaging/pages/Messaging/Messaging";
 import ConversationDefault from "./features/messaging/pages/ConversationDefault/ConversationDefault";
 import Conversation from "./features/messaging/pages/Conversation/Conversation";
+import Feed from "./features/feed/pages/Feed/Feed";
 
 
 function App() {
@@ -26,7 +27,7 @@ function App() {
         <Routes>
           <Route element={<AuthGuard />}>
             <Route path="/" element={<AppLayout />}>
-              <Route index element={<div>Home Page</div>} />
+              <Route index element={<Feed/>} />
               <Route path="/networking" element={<Networking />}>
                 <Route path="invitations" element={<Invitations />} />
                 <Route path="connections" element={<Connections />} />
