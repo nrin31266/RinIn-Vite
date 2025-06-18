@@ -26,7 +26,7 @@ const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
             if (client.connected) {
               client.send("/app/ping", {}, "{}");
             }
-          }, 10000);
+          }, 60000); // Send ping every 60 seconds
 
           // Clear interval on disconnect
           client.onDisconnect = () => clearInterval(interval);

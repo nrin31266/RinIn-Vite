@@ -40,7 +40,7 @@ const PostTools = ({setFileSelected} : {setFileSelected: React.Dispatch<React.Se
         type="file"
         id="fileInput"
         className="hidden"
-        accept="image/*"
+        accept="image/*,video/*"
         multiple
         ref={fileInputRef}
         onChange={handleFileChange}

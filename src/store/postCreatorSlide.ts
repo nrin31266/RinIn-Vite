@@ -11,6 +11,8 @@ interface IPostBackground {
    type: "COLOR" | "IMAGE_URL";
 }
 
+
+
 interface PostCreatorSlideState {
     isOpen: boolean;
     content: string;
