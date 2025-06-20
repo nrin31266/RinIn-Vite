@@ -10,16 +10,27 @@ interface IPostBackground {
    textColor: string;
    type: "COLOR" | "IMAGE_URL";
 }
-
+interface IPostRequest {
+    content: string;
+    postBgId?: string;
+    postType: "NORMAL" | "BACKGROUND";
+    postMedias: IPostMediaRq[];
+}
+export interface IPostMediaRq{
+    content: string;
+        mediaUrl: string;
+        mediaType: "IMAGE" | "VIDEO";
+        height: number;
+        width: number;
+        duration?: number;
+}
 
 
 interface PostCreatorSlideState {
     isOpen: boolean;
-    content: string;
     from: string;
     postBgs: IPostBackground[];
-    selectedPostBgId?: string;
-    
+    postRq: IPostRequest;
     status: {
         fetchPostBackgrounds: 'idle' | 'loading' | 'succeeded' | 'failed';
     }
@@ -29,8 +40,13 @@ interface PostCreatorSlideState {
 }
 const initialState: PostCreatorSlideState = {
     isOpen: false,
-    content: '',
     from: '',
+    postRq:{
+        content: '',
+        postBgId: undefined,
+        postType: 'NORMAL',
+        postMedias: [],
+    },
     postBgs: [
     ],
     status: {
@@ -56,6 +72,22 @@ export const fetchPostBackgrounds = createAsyncThunk(
     }
 );
 
+export const createPost = createAsyncThunk(
+    "postCreatorSlide/createPost", async (postRequest: IPostRequest, { rejectWithValue }) => {
+        try {
+            const data = await handleAPI<IPostRequest>({
+                endpoint: "/feed/posts",
+                method: "post",
+                isAuth: true,
+                body: postRequest,
+            });
+            return data;
+        } catch (error) {
+            return rejectWithValue(extractErrorMessage(error));
+        }
+    }
+);
+
 const postCreatorSlide = createSlice({
     name: 'postCreatorSlide',
     initialState,
@@ -66,18 +98,25 @@ const postCreatorSlide = createSlice({
         },
         closePostCreatorModel: (state) => {
             state.isOpen = false;
-            state.content = '';
             state.from = '';
         },
         setPostContent: (state, action: PayloadAction<{ content?: string }>) => {
-            state.content = action.payload.content || '';
-            if (state.content.length > 130){
-                state.selectedPostBgId = undefined; // Reset selected background if content exceeds 130 characters
+            state.postRq.content = action.payload.content || '';
+            if (state.postRq.content.length > 130){
+                state.postRq.postBgId = undefined; // Reset selected background if content exceeds 130 characters
             }
         },
         setSelectPostBgId: (state, action: PayloadAction<{ selectPostBgId?: string }>) => {
-            state.selectedPostBgId = action.payload.selectPostBgId;
+            state.postRq.postBgId = action.payload.selectPostBgId;
+            if (state.postRq.postBgId === undefined) {
+                state.postRq.postType = 'NORMAL'; // Reset post type if no background is selected
+            } else {
+                state.postRq.postType = 'BACKGROUND'; // Set post type to BACKGROUND if a background is selected
+            }
         },
+        updateMedias: (state, action: PayloadAction<{ postMedias: IPostMediaRq[] }>) => {
+            state.postRq.postMedias = action.payload.postMedias;
+        }
 
     },
     extraReducers: (builder) => {
@@ -93,10 +132,23 @@ const postCreatorSlide = createSlice({
             .addCase(fetchPostBackgrounds.rejected, (state, action) => {
                 state.status.fetchPostBackgrounds = 'failed';
                 state.error.fetchPostBackgrounds = action.payload as string;
+            })
+            .addCase(createPost.pending, (state) => {
+                state.status.fetchPostBackgrounds = 'loading';
+            })
+            .addCase(createPost.fulfilled, (state, action: PayloadAction<IPostRequest>) => {
+                state.status.fetchPostBackgrounds = 'succeeded';
+                state.isOpen = false; // Close the modal after successful post creation
+                state.postRq = initialState.postRq; // Reset post request state
+                state.from = ''; // Reset from state
+            })
+            .addCase(createPost.rejected, (state, action) => {
+                state.status.fetchPostBackgrounds = 'failed';
+                state.error.fetchPostBackgrounds = action.payload as string;
             });
     },
 
 });
 
-export const { openPostCreatorModel, closePostCreatorModel, setPostContent, setSelectPostBgId } = postCreatorSlide.actions;
+export const { openPostCreatorModel, closePostCreatorModel, setPostContent, setSelectPostBgId, updateMedias } = postCreatorSlide.actions;
 export default postCreatorSlide.reducer;

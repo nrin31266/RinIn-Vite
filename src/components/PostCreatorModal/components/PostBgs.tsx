@@ -8,7 +8,7 @@ import {
 // background-image: linear-gradient(135deg, rgba(234, 234, 234,0.06) 0%, rgba(234, 234, 234,0.06) 50%,rgba(169, 169, 169,0.06) 50%, rgba(169, 169, 169,0.06) 100%),linear-gradient(90deg, rgb(20,20,20),rgb(20,20,20)); background-size: 72px 72px;
 const PostBgs = () => {
   const dispatch = useAppDispatch();
-  const { postBgs, status, error, selectedPostBgId: selectPostBgId } = useAppSelector(
+  const { postBgs, status, error, postRq } = useAppSelector(
     (state) => state.postCreator
   );
   useEffect(() => {
@@ -30,7 +30,7 @@ const PostBgs = () => {
         <div className="flex flex-none-wrap gap-4 overflow-auto">
           <div
             className={`w-[3rem] h-[3rem] relative ${
-              undefined === selectPostBgId
+              undefined === postRq.postBgId
                 ? "border-b-10 border-[var(--primary-color-dark)] pb-1"
                 : ""
             }`}
@@ -38,7 +38,7 @@ const PostBgs = () => {
               dispatch(setSelectPostBgId({ selectPostBgId: undefined }));
             }}
           >
-            <div className="w-[3rem] flex items-center justify-center h-full rounded-md border-2 border-dashed border-gray-300">
+            <div className="w-[3rem] flex items-center justify-center h-full cursor-pointer rounded-md border-2 border-dashed border-gray-300">
               <span>Aa</span>
             </div>
           </div>
@@ -46,7 +46,7 @@ const PostBgs = () => {
             <div key={bg.id}>
               <div
                 className={`w-[3rem] h-[3rem] relative ${
-                  bg.id === selectPostBgId
+                  bg.id === postRq.postBgId
                     ? "border-b-10 border-[var(--primary-color-dark)] pb-1"
                     : ""
                 }`}
@@ -56,7 +56,7 @@ const PostBgs = () => {
               >
                 {bg.type === "COLOR" ? (
                   <div
-                    className="w-full h-full rounded-md"
+                    className="w-full h-full  rounded-md"
                     style={{ backgroundColor: bg.bgColor }}
                   ></div>
                 ) : bg.type === "IMAGE_URL" ? (
@@ -67,7 +67,7 @@ const PostBgs = () => {
                   />
                 ) : null}
                 <span
-                  className="absolute inset-0 flex items-center justify-center"
+                  className="absolute inset-0 flex items-center justify-center  cursor-pointer"
                   style={{ color: bg.textColor }}
                 >
                   Aa

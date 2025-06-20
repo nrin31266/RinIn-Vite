@@ -14,7 +14,9 @@ const AppLayout = () => {
         <HeaderComponent />
         <div className="container mx-auto md:px-0 pt-2">
           <Outlet />
-          {isOpen && <PostCreatorModal />}
+          <div className={`${isOpen ? 'block' : 'hidden'}`}>
+            <PostCreatorModal />
+          </div>
         </div>
       </div>
     </WebSocketProvider>
