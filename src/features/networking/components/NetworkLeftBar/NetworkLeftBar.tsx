@@ -43,6 +43,7 @@ const NetworkLeftBar = () => {
           <div>
             <div className=" text-sm font-bold bg-gray-200 rounded-full w-[2rem] h-[2rem] flex items-center justify-center">
                 {invitations.length}
+                
             </div>
           </div>
         </NavLink>
