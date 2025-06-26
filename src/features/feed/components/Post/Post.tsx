@@ -4,6 +4,7 @@ import { DateUtils } from '../../../../utils/dateUtils'
 import IconButton from '@mui/material/IconButton'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import PostMediaGrid from '../PostMediaGrid/PostMediaGrid';
+import PostActionsBottom from './components/PostActionsBottom/PostActionsBottom';
 const Post = ({ post }: { post: IPostDto }) => {
   return (
     <div className='p-2 rounded-md shadow bg-white'>
@@ -38,6 +39,7 @@ const Post = ({ post }: { post: IPostDto }) => {
             </div>
         }
       </div>
+      <PostActionsBottom post={post} />
     </div>
   )
 }
