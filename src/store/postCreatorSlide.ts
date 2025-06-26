@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/tool
 import { extractErrorMessage } from "./utils";
 import handleAPI from "../cfgs/handleAPI";
 
-interface IPostBackground {
+export interface IPostBackground {
     id: string;
    bgImgUrl: string;
    bgColor: string;
