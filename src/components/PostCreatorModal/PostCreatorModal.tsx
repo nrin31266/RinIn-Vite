@@ -1,24 +1,32 @@
 import React, { useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
-import { closePostCreatorModel, createPost, setPostContent, updateMedias, type IPostMediaRq } from "../../store/postCreatorSlide";
+import {
+  closePostCreatorModel,
+  createPost,
+  setPostContent,
+  updateMedias,
+  type IPostMediaRq,
+} from "../../store/postCreatorSlide";
 import HighlightOffSharpIcon from "@mui/icons-material/HighlightOffSharp";
 import IconButton from "@mui/material/IconButton";
 import PostBgs from "./components/PostBgs";
 import PostTools from "./components/PostTools";
-import FileSection from './components/FileSection';
+import FileSection from "./components/FileSection";
 import { useFormik } from "formik";
 import Button from "@mui/material/Button";
 import { uploadFiles } from "../../features/firebase/uploadFile";
+import { MediaUtils } from "../../utils/mediaUtils";
 
 export interface IFormPostCreator {
   postMedias: {
-        content: string;
-        mediaUrl: string;
-        mediaType: "IMAGE" | "VIDEO";
-        height: number;
-        width: number;
-        duration?: number;
-      }[]
+    content: string;
+    mediaUrl: string;
+    mediaType: "IMAGE" | "VIDEO";
+    height: number;
+    width: number;
+    duration?: number;
+    thumbnailUrl?: string; // Thêm thumbnailUrl cho video
+  }[];
 }
 
 const PostCreatorModal = () => {
@@ -42,76 +50,238 @@ const PostCreatorModal = () => {
   const handleRemoveFile = (idx: number) => {
     setSelectedFiles((files) => files.filter((_, i) => i !== idx));
     // Cập nhật formik nếu cần
-    dispatch(updateMedias({postMedias: postRq.postMedias?.filter((_, i) => i !== idx)}));
-  }
- const handlePost = async () => {
-  if( !user || isPostCreating) return;
-  setIsPostCreating(true);
-  try {
-    const rq = { ...postRq };
-
-    if (rq.postType === "NORMAL") {
-      const mediaPromises = rq.postMedias.map((pm, i) => {
-        const file = selectedFiles[i];
-        const url = URL.createObjectURL(file);
-
-        return new Promise<IPostMediaRq>((resolve, reject) => {
-          if (pm.mediaType === "IMAGE") {
-            const img = new Image();
-            img.onload = () => {
-              resolve({ ...pm, height: img.naturalHeight, width: img.naturalWidth });
-            };
-            img.onerror = reject;
-            img.src = url;
-          } else if (pm.mediaType === "VIDEO") {
-            const video = document.createElement("video");
-            video.onloadedmetadata = () => {
-              resolve({
-                ...pm,
-                height: video.videoHeight,
-                width: video.videoWidth,
-                duration: video.duration,
-              });
-            };
-            video.onerror = reject;
-            video.preload = "metadata";
-            video.src = url;
-          } else {
-            reject(new Error("Unsupported media type"));
-          }
-        });
-      });
-
-      rq.postMedias = await Promise.all(mediaPromises);
-      const mediaUrls = await uploadFiles(selectedFiles, "posts", user.id.toString());
-      rq.postMedias = rq.postMedias.map((pm, i) => ({
-        ...pm,
-        mediaUrl: mediaUrls[i],
-      }));
-    } else {
-      rq.postMedias = []; // Post type khác thì clear media
-    }
-
-    console.log("Request with full metadata:", rq);
-    await dispatch(createPost(rq));
-    setSelectedFiles([]);
-  } catch (error) {
-    console.error("Error while posting:", error);
-  } finally {
-    setIsPostCreating(false);
-  }
-};
-
+    dispatch(
+      updateMedias({
+        postMedias: postRq.postMedias?.filter((_, i) => i !== idx),
+      })
+    );
+  };
   
+  /**
+   * Lấy metadata của một image file
+   */
+  const getImageMetadata = (file: File, pm: IPostMediaRq): Promise<IPostMediaRq> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      
+      img.onload = () => {
+        URL.revokeObjectURL(url); // Clean up
+        resolve({
+          ...pm,
+          height: img.naturalHeight,
+          width: img.naturalWidth,
+        });
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  };
 
+  /**
+   * Lấy metadata của một video file
+   */
+  const getVideoMetadata = (file: File, pm: IPostMediaRq): Promise<IPostMediaRq> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement("video");
+      const url = URL.createObjectURL(file);
+      
+      video.onloadedmetadata = () => {
+        URL.revokeObjectURL(url); // Clean up
+        resolve({
+          ...pm,
+          height: video.videoHeight,
+          width: video.videoWidth,
+          duration: video.duration,
+        });
+      };
+      video.onerror = reject;
+      video.preload = "metadata";
+      video.src = url;
+    });
+  };
 
+  /**
+   * Lấy metadata của tất cả files (dimensions, duration)
+   */
+  const getAllMediaMetadata = async (selectedFiles: File[], postMedias: IPostMediaRq[]): Promise<IPostMediaRq[]> => {
+    console.log("📏 Getting media metadata...");
+    
+    const mediaPromises = postMedias.map((pm, i) => {
+      const file = selectedFiles[i];
+      
+      if (pm.mediaType === "IMAGE") {
+        return getImageMetadata(file, pm);
+      } else if (pm.mediaType === "VIDEO") {
+        return getVideoMetadata(file, pm);
+      } else {
+        return Promise.reject(new Error("Unsupported media type"));
+      }
+    });
+
+    return Promise.all(mediaPromises);
+  };
+
+  /**
+   * Tạo thumbnails cho tất cả video files
+   */
+  const createVideoThumbnails = async (selectedFiles: File[], postMedias: IPostMediaRq[]) => {
+    console.log("🖼️ Creating video thumbnails...");
+    
+    const thumbnailFiles: { [index: number]: File } = {};
+    const thumbnailPromises: Promise<void>[] = [];
+    
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+      const pm = postMedias[i];
+      
+      if (pm.mediaType === "VIDEO") {
+        const thumbnailPromise = MediaUtils.createVideoThumbnail(file).then(thumbnailFile => {
+          thumbnailFiles[i] = thumbnailFile;
+        });
+        thumbnailPromises.push(thumbnailPromise);
+      }
+    }
+    
+    await Promise.all(thumbnailPromises);
+    return thumbnailFiles;
+  };
+
+  /**
+   * Upload một file và thumbnail (nếu có)
+   */
+  const uploadSingleMedia = async (
+    file: File,
+    pm: IPostMediaRq,
+    thumbnailFile: File | undefined,
+    index: number
+  ): Promise<{ mediaUrl: string; thumbnailUrl?: string; index: number }> => {
+    if (!user) throw new Error("User is required for upload");
+    
+    console.log(`📤 Starting upload ${index + 1}: ${file.name}`);
+    
+    // Upload media file
+    const [mediaUrl] = await uploadFiles([file], "posts", user.id.toString());
+    
+    let thumbnailUrl: string | undefined;
+    
+    // Upload thumbnail nếu là video
+    if (pm.mediaType === "VIDEO" && thumbnailFile) {
+      console.log(`🖼️ Uploading thumbnail ${index + 1}: thumbnail_${file.name}`);
+      const [thumbUrl] = await uploadFiles([thumbnailFile], "posts", user.id.toString());
+      thumbnailUrl = thumbUrl;
+    }
+    
+    console.log(`✅ Completed upload ${index + 1}: ${file.name}`);
+    return { mediaUrl, thumbnailUrl, index };
+  };
+
+  /**
+   * Upload tất cả files song song
+   */
+  const uploadAllMediaFiles = async (
+    selectedFiles: File[], 
+    postMedias: IPostMediaRq[], 
+    thumbnailFiles: { [index: number]: File }
+  ) => {
+    console.log("☁️ Starting parallel uploads...");
+    
+    // Tạo array các promises upload
+    const uploadPromises = selectedFiles.map((file, i) => 
+      uploadSingleMedia(file, postMedias[i], thumbnailFiles[i], i)
+    );
+    
+    // Đợi tất cả uploads hoàn thành song song
+    const uploadResults = await Promise.all(uploadPromises);
+    
+    // Sắp xếp lại theo index để đảm bảo thứ tự đúng
+    const mediaUrls: string[] = [];
+    const thumbnailUrls: string[] = [];
+    
+    uploadResults
+      .sort((a, b) => a.index - b.index)
+      .forEach(result => {
+        mediaUrls[result.index] = result.mediaUrl;
+        if (result.thumbnailUrl) {
+          thumbnailUrls[result.index] = result.thumbnailUrl;
+        }
+      });
+    
+    console.log("🎉 All uploads completed!");
+    return { mediaUrls, thumbnailUrls };
+  };
+
+  /**
+   * Map URLs vào postMedias
+   */
+  const mapUrlsToPostMedias = (
+    postMedias: IPostMediaRq[], 
+    mediaUrls: string[], 
+    thumbnailUrls: string[]
+  ): IPostMediaRq[] => {
+    console.log("🔗 Mapping URLs to post data...");
+    
+    return postMedias.map((pm, i) => ({
+      ...pm,
+      mediaUrl: mediaUrls[i],
+      thumbnailUrl: pm.mediaType === "VIDEO" ? thumbnailUrls[i] : undefined,
+    }));
+  };
+
+  /**
+   * Xử lý upload media cho post NORMAL
+   */
+  const handleNormalPostMedia = async (postMedias: IPostMediaRq[]): Promise<IPostMediaRq[]> => {
+    // Bước 1: Lấy metadata
+    const mediasWithMetadata = await getAllMediaMetadata(selectedFiles, postMedias);
+    
+    // Bước 2: Tạo thumbnails cho video
+    const thumbnailFiles = await createVideoThumbnails(selectedFiles, mediasWithMetadata);
+    
+    // Bước 3: Upload tất cả files
+    const { mediaUrls, thumbnailUrls } = await uploadAllMediaFiles(
+      selectedFiles, 
+      mediasWithMetadata, 
+      thumbnailFiles
+    );
+    
+    // Bước 4: Map URLs vào postMedias
+    return mapUrlsToPostMedias(mediasWithMetadata, mediaUrls, thumbnailUrls);
+  };
+  
+  const handlePost = async () => {
+    if (!user || isPostCreating) return;
+    setIsPostCreating(true);
+    
+    try {
+      const rq = { ...postRq };
+
+      if (rq.postType === "NORMAL") {
+        // Xử lý upload media cho post NORMAL
+        rq.postMedias = await handleNormalPostMedia(rq.postMedias);
+      } else {
+        // Post type BACKGROUND không có media
+        rq.postMedias = [];
+      }
+
+      // Tạo post
+      console.log("📤 Creating post...", rq);
+      await dispatch(createPost(rq));
+      setSelectedFiles([]);
+      
+    } catch (error) {
+      console.error("❌ Error while posting:", error);
+    } finally {
+      setIsPostCreating(false);
+    }
+  };
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs"
       onClick={handleBackdropClick}
     >
-      <div  className="bg-[var(--background-color)] rounded-lg shadow-lg p-4 w-[min(100%,600px)] relative">
+      <div className="bg-[var(--background-color)] rounded-lg shadow-lg p-4 w-[min(100%,600px)] relative">
         <div className="absolute top-2 right-2">
           <IconButton onClick={() => dispatch(closePostCreatorModel())}>
             <HighlightOffSharpIcon />
@@ -151,12 +321,15 @@ const PostCreatorModal = () => {
             >
               <textarea
                 className={`overflow-hidden w-full min-h-[70px] h-[70px]  border-none resize-none bg-transparent focus:outline-none text-center font-medium py-3 px-6 
-                  ${selectedBg.textColor === "#ffffff" ? "placeholder:text-gray-200" : "placeholder:text-gray-400"}`}
+                  ${
+                    selectedBg.textColor === "#ffffff"
+                      ? "placeholder:text-gray-200"
+                      : "placeholder:text-gray-400"
+                  }`}
                 style={{
                   color: selectedBg.textColor,
                   fontSize: "1.75rem",
                   whiteSpace: "pre-wrap",
-                  
                 }}
                 placeholder="What's on your mind?"
                 value={postRq.content}
@@ -169,11 +342,13 @@ const PostCreatorModal = () => {
                 }}
                 rows={1}
                 onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = "auto";
-                target.style.height = `${Math.max(target.scrollHeight, 70)}px`;
-                
-              }}
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = "auto";
+                  target.style.height = `${Math.max(
+                    target.scrollHeight,
+                    70
+                  )}px`;
+                }}
               />
             </div>
           ) : (
@@ -193,16 +368,26 @@ const PostCreatorModal = () => {
               }}
             />
           )}
-          {
-            isOpen && selectedFiles.length > 0 ? <><FileSection files={selectedFiles} onRemove={handleRemoveFile} /></> : null
-          }
+          {isOpen && selectedFiles.length > 0 ? (
+            <>
+              <FileSection files={selectedFiles} onRemove={handleRemoveFile} />
+            </>
+          ) : null}
         </div>
         <div className="mt-4 flex flex-col gap-4">
-          {postRq.content.length <= 130 && isOpen && selectedFiles.length <= 0 && <PostBgs />}
+          {postRq.content.length <= 130 &&
+            isOpen &&
+            selectedFiles.length <= 0 && <PostBgs />}
           <PostTools setFileSelected={setSelectedFiles} />
-          <Button variant="contained" size="large" disabled={postRq.content.length <= 0 || isPostCreating} loading={isPostCreating} onClick={()=>{
-            handlePost();
-          }}>
+          <Button
+            variant="contained"
+            size="large"
+            disabled={postRq.content.length <= 0 || isPostCreating}
+            loading={isPostCreating}
+            onClick={() => {
+              handlePost();
+            }}
+          >
             Post
           </Button>
         </div>

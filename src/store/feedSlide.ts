@@ -24,6 +24,7 @@ export interface IPostMedia {
   height: number
   width: number
   duration?: number
+  thumbnailUrl?: string // Thêm thumbnailUrl nếu cần
 }
 
 export const fetchPosts = createAsyncThunk(
