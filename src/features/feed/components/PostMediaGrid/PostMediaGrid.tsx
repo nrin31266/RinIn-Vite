@@ -35,7 +35,7 @@ const PostMediaGrid = ({ postMedias }: { postMedias: IPostMedia[] }) => {
 
 
   return (
-    <RowsPhotoAlbum
+    <RowsPhotoAlbum 
       layout="rows"
       photos={photos}
       spacing={8}

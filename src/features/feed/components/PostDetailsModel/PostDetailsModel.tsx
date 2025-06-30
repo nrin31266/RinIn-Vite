@@ -1,19 +1,16 @@
-import React, { use, useEffect } from "react";
-import {
-  togglePostDetailsModel,
-  type IPostDto,
-} from "../../../../store/feedSlide";
-import Modal from "@mui/material/Modal";
-import Typography from "@mui/material/Typography";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
-import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import PostHeader from "../Post/components/PostHeader/PostHeader";
-import PostContent from "../Post/components/PostContent/PostContent";
-import PostStatistical from "../Post/components/PostStatistical/PostStatistical";
-import PostActionsBottom from "../Post/components/PostActionsBottom/PostActionsBottom";
+import Modal from "@mui/material/Modal";
+import React, { useEffect } from "react";
+import {
+  togglePostDetailsModel
+} from "../../../../store/feedSlide";
 import { useAppDispatch, useAppSelector } from "../../../../store/store";
+import PostActionsBottom from "../Post/components/PostActionsBottom/PostActionsBottom";
+import PostContent from "../Post/components/PostContent/PostContent";
+import PostHeader from "../Post/components/PostHeader/PostHeader";
+import PostStatistical from "../Post/components/PostStatistical/PostStatistical";
+import PostCommentAction from "../PostCommentAction/PostCommentAction";
 
 const style = {
   position: "absolute",
@@ -33,7 +30,7 @@ const PostDetailsModel: React.FC = () => {
     (state) => state.feed
   );
   const dispatch = useAppDispatch();
-
+  const {user} = useAppSelector((state) => state.auth);
   useEffect(() => {
     console.log("Selected post in PostDetailsModel:", selectedPost);
   }, [selectedPost?.id]);
@@ -48,8 +45,12 @@ const PostDetailsModel: React.FC = () => {
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
     >
-      <Box sx={style}>
-        <div className="p-4 relative w-full">
+      <div
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 
+      -translate-y-1/2 w-[min(600px,100%)] bg-white shadow-lg rounded-lg 
+      border border-gray-200 h-[90vh] grid grid-rows-[auto_1fr_auto]"
+      >
+        <div className="p-4 relative w-full border-b border-gray-200">
           <h1 className="text-center font-bold text-xl">
             The post of {selectedPost?.author.lastName}
           </h1>
@@ -60,14 +61,29 @@ const PostDetailsModel: React.FC = () => {
           </div>
         </div>
 
-        <Divider />
-        <div className="p-4 h-full overflow-y-auto">
-          <PostHeader post={selectedPost} onMoreClick={() => {}} />
-          <PostContent post={selectedPost} />
-          <PostStatistical post={selectedPost} />
-          <PostActionsBottom post={selectedPost} />
+        <div className="overflow-y-auto">
+          <div className="p-4 border-b border-gray-200">
+            <PostHeader post={selectedPost} onMoreClick={() => {}} />
+            <PostContent post={selectedPost} />
+            <PostStatistical post={selectedPost} />
+            <PostActionsBottom post={selectedPost} />
+          </div>
+          <div className="p-4">
+            {(!selectedPost.commentCount || selectedPost.commentCount < 1) ? (
+              <div className="w-full h-auto flex items-center justify-center">
+                <h1 className="text text-gray-600">No comments yet.</h1>
+              </div>
+            ) : (
+              <div>
+                <h1>{selectedPost.commentCount} comments</h1>
+              </div>
+            )}
+          </div>
         </div>
-      </Box>
+        <div className="p-4 border-t-2 border-gray-200">
+          <PostCommentAction/>
+        </div>
+      </div>
     </Modal>
   );
 };

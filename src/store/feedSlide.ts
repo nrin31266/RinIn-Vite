@@ -35,6 +35,19 @@ export interface IPostMedia {
   duration?: number;
   thumbnailUrl?: string; // Thêm thumbnailUrl nếu cần
 }
+export interface ICommentDtoRq{
+  content: string;
+  targetId: number;
+  targetAction: "POST" | "POST_MEDIA" | "COMMENT";
+}
+
+export interface ICommentDto {
+  id: number
+  author: IUser
+  content: string
+  creationDate: string
+  updateDate: string
+}
 
 export const fetchPosts = createAsyncThunk(
   "feed/fetchPosts",
@@ -89,35 +102,57 @@ export const unReactToPost = createAsyncThunk(
     }
   }
 );
+export const createComment = createAsyncThunk(
+  "feed/createComment",
+  async (commentData: ICommentDtoRq, { rejectWithValue }) => {
+    try {
+      const data = await handleAPI<ICommentDto>({
+        endpoint: `/feed/posts/comment`,
+        method: "post",
+        isAuth: true,
+        body: commentData,
+      });
+      return data;
+    } catch (error) {
+      return rejectWithValue(extractErrorMessage(error));
+    }
+  }
+);
 
 interface IFeedSlideState {
   posts: IPostDto[];
   selectedPost?: IPostDto; // Thêm biến để lưu post được chọn
   openPostDetailsModel: boolean; // Biến để xác định có mở model chi tiết post hay không
+  currentPostComments: ICommentDto[]; // Biến để lưu các comment của post hiện tại
   status: {
     fetchPosts: "idle" | "loading" | "succeeded" | "failed";
     reactToPost: "idle" | "loading" | "succeeded" | "failed";
     unReactToPost: "idle" | "loading" | "succeeded" | "failed";
+    createComment: "idle" | "loading" | "succeeded" | "failed";
   };
   error: {
     fetchPosts: string | null;
     reactToPost: string | null;
     unReactToPost: string | null;
+    createComment?: string | null; // Thêm error cho createComment nếu cần
   };
 }
 const initialState: IFeedSlideState = {
   posts: [],
   selectedPost: undefined,
   openPostDetailsModel: false,
+  currentPostComments: [], // Biến để lưu các comment của post hiện tại
   status: {
     fetchPosts: "idle",
     reactToPost: "idle",
     unReactToPost: "idle",
+    createComment: "idle",
   },
   error: {
     fetchPosts: null,
     reactToPost: null,
     unReactToPost: null,
+    createComment: null, // Thêm error cho createComment nếu cần
   },
 };
 
@@ -281,6 +316,25 @@ const feedSlide = createSlice({
           // Cập nhật selectedPost nếu có
           updateSelectedPost(state, post);
         }
+      }).addCase(createComment.pending, (state) => {
+        state.status.createComment = "loading";
+      }).addCase(createComment.fulfilled, (state, action) => {
+        state.status.createComment = "succeeded";
+        const newComment = action.payload;
+        const { targetId } = action.meta.arg; // Lấy comment từ payload
+        const post = state.posts.find((p) => p.id === targetId);
+        if(post) {
+          state.currentPostComments.push(newComment);
+          
+          // Cập nhật số lượng comment của post
+          post.commentCount += 1;
+
+          // Cập nhật selectedPost nếu có
+          updateSelectedPost(state, post);
+        }
+      }).addCase(createComment.rejected, (state, action) => {
+        state.status.createComment = "failed";
+        state.error.createComment = action.payload as string;
       });
   },
 });
