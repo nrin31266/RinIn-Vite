@@ -3,7 +3,9 @@ import IconButton from "@mui/material/IconButton";
 import Modal from "@mui/material/Modal";
 import React, { useEffect } from "react";
 import {
-  togglePostDetailsModel
+  fetchPostComments,
+  togglePostDetailsModel,
+  type ICommentDtoRq
 } from "../../../../store/feedSlide";
 import { useAppDispatch, useAppSelector } from "../../../../store/store";
 import PostActionsBottom from "../Post/components/PostActionsBottom/PostActionsBottom";
@@ -11,19 +13,7 @@ import PostContent from "../Post/components/PostContent/PostContent";
 import PostHeader from "../Post/components/PostHeader/PostHeader";
 import PostStatistical from "../Post/components/PostStatistical/PostStatistical";
 import PostCommentAction from "../PostCommentAction/PostCommentAction";
-
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: "min(800px, 100%)",
-  bgcolor: "background.paper",
-  border: "1px solid #e0e0e0",
-  boxShadow: 24,
-  borderRadius: "8px",
-  height: "86vh",
-};
+import PostComments from "../PostComments/PostComments";
 
 const PostDetailsModel: React.FC = () => {
   const { openPostDetailsModel, selectedPost } = useAppSelector(
@@ -32,7 +22,9 @@ const PostDetailsModel: React.FC = () => {
   const dispatch = useAppDispatch();
   const {user} = useAppSelector((state) => state.auth);
   useEffect(() => {
-    console.log("Selected post in PostDetailsModel:", selectedPost);
+    if (selectedPost) {
+      dispatch(fetchPostComments({ targetId: selectedPost.id, targetAction: "POST" }));
+    }
   }, [selectedPost?.id]);
   if (!selectedPost) {
     return null; // or you can return a loading state
@@ -47,8 +39,8 @@ const PostDetailsModel: React.FC = () => {
     >
       <div
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 
-      -translate-y-1/2 w-[min(600px,100%)] bg-white shadow-lg rounded-lg 
-      border border-gray-200 h-[90vh] grid grid-rows-[auto_1fr_auto]"
+      -translate-y-1/2 w-[min(600px,100%)] bg-white shadow-lg md:rounded-lg 
+      md:border border-gray-200 md:h-[90vh] h-[100vh] grid grid-rows-[auto_1fr_auto]"
       >
         <div className="p-4 relative w-full border-b border-gray-200">
           <h1 className="text-center font-bold text-xl">
@@ -68,17 +60,7 @@ const PostDetailsModel: React.FC = () => {
             <PostStatistical post={selectedPost} />
             <PostActionsBottom post={selectedPost} />
           </div>
-          <div className="p-4">
-            {(!selectedPost.commentCount || selectedPost.commentCount < 1) ? (
-              <div className="w-full h-auto flex items-center justify-center">
-                <h1 className="text text-gray-600">No comments yet.</h1>
-              </div>
-            ) : (
-              <div>
-                <h1>{selectedPost.commentCount} comments</h1>
-              </div>
-            )}
-          </div>
+          <PostComments />
         </div>
         <div className="p-4 border-t-2 border-gray-200">
           <PostCommentAction/>

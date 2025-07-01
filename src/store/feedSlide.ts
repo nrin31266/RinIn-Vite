@@ -39,6 +39,7 @@ export interface ICommentDtoRq{
   content: string;
   targetId: number;
   targetAction: "POST" | "POST_MEDIA" | "COMMENT";
+  repliedToId?: number;
 }
 
 export interface ICommentDto {
@@ -46,9 +47,14 @@ export interface ICommentDto {
   author: IUser
   content: string
   creationDate: string
-  updateDate: string
+  updateDate?: string
+  parentCommentId: number
+  repliedTo: IUser
+  repliedCount: number
+  postId: number
+  //Only front end use
+  replies?: ICommentDto[]; // Biến này để lưu các comment đã reply
 }
-
 export const fetchPosts = createAsyncThunk(
   "feed/fetchPosts",
   async (_, { rejectWithValue }) => {
@@ -118,6 +124,21 @@ export const createComment = createAsyncThunk(
     }
   }
 );
+export const fetchPostComments = createAsyncThunk<ICommentDto[], { targetId: number; targetAction: "POST" | "POST_MEDIA" | "COMMENT" }>(
+  "feed/fetchPostComments",
+  async ({targetAction, targetId}, { rejectWithValue }) => {
+    try {
+      const data = await handleAPI<ICommentDto[]>({
+        endpoint: `/feed/comments?targetId=${targetId}&targetAction=${targetAction}`,
+        method: "get",
+        isAuth: true,
+      });
+      return data;
+    } catch (error) {
+      return rejectWithValue(extractErrorMessage(error));
+    }
+  }
+);
 
 interface IFeedSlideState {
   posts: IPostDto[];
@@ -129,12 +150,16 @@ interface IFeedSlideState {
     reactToPost: "idle" | "loading" | "succeeded" | "failed";
     unReactToPost: "idle" | "loading" | "succeeded" | "failed";
     createComment: "idle" | "loading" | "succeeded" | "failed";
+    fetchComments: "idle" | "loading" | "succeeded" | "failed";
+    fetchRepliedComments: Record<number, "idle" | "loading" | "succeeded" | "failed">; // Trạng thái của các comment đã reply
   };
   error: {
     fetchPosts: string | null;
     reactToPost: string | null;
     unReactToPost: string | null;
     createComment?: string | null; // Thêm error cho createComment nếu cần
+    fetchComments?: string | null; // Thêm error cho fetchComments nếu cần
+    fetchRepliedComments: Record<number, string | null>; // Thêm error cho fetch
   };
 }
 const initialState: IFeedSlideState = {
@@ -147,12 +172,16 @@ const initialState: IFeedSlideState = {
     reactToPost: "idle",
     unReactToPost: "idle",
     createComment: "idle",
+    fetchComments: "idle", // Trạng thái của fetchComments
+    fetchRepliedComments: {}, // Trạng thái của các comment đã reply
   },
   error: {
     fetchPosts: null,
     reactToPost: null,
     unReactToPost: null,
     createComment: null, // Thêm error cho createComment nếu cần
+    fetchComments: null, // Thêm error cho fetchComments nếu cần
+    fetchRepliedComments: {}, // Thêm error cho fetchRepliedComments nếu cần
   },
 };
 
@@ -321,10 +350,10 @@ const feedSlide = createSlice({
       }).addCase(createComment.fulfilled, (state, action) => {
         state.status.createComment = "succeeded";
         const newComment = action.payload;
-        const { targetId } = action.meta.arg; // Lấy comment từ payload
-        const post = state.posts.find((p) => p.id === targetId);
+        
+        const post = state.posts.find((p) => p.id === newComment.postId);
         if(post) {
-          state.currentPostComments.push(newComment);
+          state.currentPostComments = [newComment, ...state.currentPostComments]
           
           // Cập nhật số lượng comment của post
           post.commentCount += 1;
@@ -335,6 +364,53 @@ const feedSlide = createSlice({
       }).addCase(createComment.rejected, (state, action) => {
         state.status.createComment = "failed";
         state.error.createComment = action.payload as string;
+      })
+      .addCase(fetchPostComments.pending, (state, action) => {
+        const { targetId, targetAction } = action.meta.arg;
+        switch (targetAction) {
+          case "POST":
+            state.status.fetchComments = "loading";
+            break;
+          case "COMMENT":
+            // Cập nhật trạng thái của comment đã reply
+            if (!state.status.fetchRepliedComments[targetId]) {
+              state.status.fetchRepliedComments[targetId] = "loading";
+            }
+            break;
+        }
+      })
+      .addCase(fetchPostComments.fulfilled, (state, action) => {
+        const { targetId, targetAction } = action.meta.arg;
+        switch (targetAction) {
+          case "POST":
+            state.status.fetchComments = "succeeded";
+            state.currentPostComments = action.payload;
+            break;
+          case "COMMENT":
+            // Cập nhật trạng thái của comment đã reply
+            if (state.status.fetchRepliedComments[targetId] === "loading") {
+              state.status.fetchRepliedComments[targetId] = "succeeded";
+            }
+            // Thêm các comment đã reply vào currentPostComments
+            state.currentPostComments.push(...action.payload);
+            break;
+        }
+      })
+      .addCase(fetchPostComments.rejected, (state, action) => {
+        const { targetId, targetAction } = action.meta.arg;
+        switch (targetAction) {
+          case "POST":
+            state.status.fetchComments = "failed";
+            state.error.fetchComments = action.payload as string;
+            break;
+          case "COMMENT":
+            // Cập nhật trạng thái của comment đã reply
+            if (state.status.fetchRepliedComments[targetId] === "loading") {
+              state.status.fetchRepliedComments[targetId] = "failed";
+              state.error.fetchRepliedComments[targetId] = action.payload as string;
+            }
+            break;
+        }
       });
   },
 });
