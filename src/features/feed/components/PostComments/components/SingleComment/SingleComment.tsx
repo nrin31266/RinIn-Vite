@@ -1,10 +1,15 @@
 import Button from "@mui/material/Button";
-import type { ICommentDto } from "../../../../../../store/feedSlide";
-import { useAppSelector } from "../../../../../../store/store";
-import { useState } from "react";
+import { deleteComment, type ICommentDto } from "../../../../../../store/feedSlide";
+import { useAppDispatch, useAppSelector } from "../../../../../../store/store";
+import React, { useState } from "react";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import IconButton from "@mui/material/IconButton";
 import EditComment from "../EditComment/Editcomment";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
 interface SingleCommentProps {
   comment: ICommentDto;
   onReplyClick: () => void;
@@ -22,6 +27,14 @@ const SingleComment = ({
   const user = useAppSelector((state) => state.auth.user);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false); // Thêm state để quản lý việc xóa comment
+  const dispatch = useAppDispatch();
+  const deleteStatus = useAppSelector((state) => state.feed.status.deleteComment[comment.id]);
+  const handleDeleteComment = async () => {
+    if (comment.id) {
+      await dispatch(deleteComment({ commentId: comment.id }));
+    }
+  }
   
   return (
     <div className="relative">
@@ -36,7 +49,7 @@ const SingleComment = ({
                <button onClick={()=>{setEditing(true)}} className="text-xs text-gray-600 hover:text-gray-800 cursor-pointer">
                  Edit
                </button>
-               <button className="text-xs text-gray-600 hover:text-gray-800 cursor-pointer">
+               <button onClick={() => setDeleting(true)} className="text-xs text-gray-600 hover:text-gray-800 cursor-pointer">
                  Delete
                </button>
              </div>
@@ -99,6 +112,23 @@ const SingleComment = ({
           )}
       </div>
       </div>: user && <EditComment comment={comment} auth={user} onClose={() => setEditing(false)} />}
+
+
+          <Dialog
+        open={deleting}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <div className="pt-4 px-4">
+          Are you sure you want to delete this comment?
+        </div>
+        <DialogActions>
+          <Button disabled={deleteStatus === "loading"} color="secondary" onClick={() => setDeleting(false)}>Disagree</Button>
+          <Button onClick={handleDeleteComment} loading={deleteStatus === "loading"} color="error" autoFocus>
+            Agree
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
