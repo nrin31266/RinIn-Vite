@@ -1,13 +1,16 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../store/store";
 import IconButton from "@mui/material/IconButton";
 import { createComment } from "../../../../store/feedSlide";
+import SendRoundedIcon from '@mui/icons-material/SendRounded';
 interface IPostCommentActionProps {
   onAction?:  (comment: string) => void;
   loading?: boolean;
+  placeholder?: string;
+  initialValue?: string;
 }
 
-const PostCommentAction = ({ onAction, loading }: IPostCommentActionProps) => {
+const PostCommentAction = ({ onAction, loading, placeholder, initialValue }: IPostCommentActionProps) => {
   const user = useAppSelector((state) => state.auth.user);
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
   const [comment, setComment] = React.useState("");
@@ -16,6 +19,12 @@ const PostCommentAction = ({ onAction, loading }: IPostCommentActionProps) => {
     (state) => state.feed
   );
   const dispatch = useAppDispatch();
+  // Nếu có nội dung được truyền vào, đặt comment là nội dung đó
+  useEffect(() => {
+    if (initialValue) {
+      setComment(initialValue);
+    }
+  }, [initialValue]);
   const handleCommentSubmit = async () => {
     if (!comment.trim()) return; // Không gửi nếu comment rỗng
     if (onAction) {
@@ -55,7 +64,7 @@ const PostCommentAction = ({ onAction, loading }: IPostCommentActionProps) => {
         resize-none min-h-[30px] px-2 pt-2  rounded-md"
           id=""
           rows={1}
-          placeholder={`Comment as ${
+          placeholder={placeholder || `Comment as ${
             user?.firstName + " " + user?.lastName || "User"
           }...`}
           value={comment}
@@ -75,30 +84,19 @@ const PostCommentAction = ({ onAction, loading }: IPostCommentActionProps) => {
             }
           }}
         ></textarea>
-        <div className="grid grid-cols-[auto_auto] pl-2 pr-1 pb-1 -mt-2 h-[2rem] items-center gap-2">
+        <div className="px-2 pb-1 relative">
           <div className="text-blue-600 text-sm">
             Feature will update soon...
           </div>
-          <div className="flex items-center justify-end">
+          <div className="absolute right-2 top-0 -translate-y-1/2">
             <IconButton
               onClick={handleCommentSubmit}
-              disabled={!comment.trim()}
-              className={`text-gray-500 p-2 rounded-full ${
-                !comment.trim()
-                  ? ""
-                  : "!text-[var(--primary-color)] hover:!text-[var(--primary-color-dark)]"
-              }`}
+              disabled={initialValue? !comment.trim() || comment.trim() === initialValue : !comment.trim()}
               loading={loading !== undefined ? loading : status.createComment === "loading"}
+              className="!p-0 !h-8 !w-8 !rounded-full hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Send Comment"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 512 512"
-                fill="currentColor"
-                height={14}
-                width={14}
-              >
-                <path d="M16.1 260.2c-22.6 12.9-20.5 47.3 3.6 57.3L160 376l0 103.3c0 18.1 14.6 32.7 32.7 32.7c9.7 0 18.9-4.3 25.1-11.8l62-74.3 123.9 51.6c18.9 7.9 40.8-4.5 43.9-24.7l64-416c1.9-12.1-3.4-24.3-13.5-31.2s-23.3-7.5-34-1.4l-448 256zm52.1 25.5L409.7 90.6 190.1 336l1.2 1L68.2 285.7zM403.3 425.4L236.7 355.9 450.8 116.6 403.3 425.4z" />
-              </svg>
+              <SendRoundedIcon color="primary" />
             </IconButton>
           </div>
         </div>

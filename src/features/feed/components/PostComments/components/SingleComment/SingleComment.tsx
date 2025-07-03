@@ -1,5 +1,10 @@
+import Button from "@mui/material/Button";
 import type { ICommentDto } from "../../../../../../store/feedSlide";
-
+import { useAppSelector } from "../../../../../../store/store";
+import { useState } from "react";
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import IconButton from "@mui/material/IconButton";
+import EditComment from "../EditComment/Editcomment";
 interface SingleCommentProps {
   comment: ICommentDto;
   onReplyClick: () => void;
@@ -9,12 +14,39 @@ interface SingleCommentProps {
 /**
  * Component hiển thị một comment đơn lẻ với avatar, nội dung, và actions
  */
-const SingleComment = ({ comment, onReplyClick, onLoadReplies }: SingleCommentProps) => {
+const SingleComment = ({
+  comment,
+  onReplyClick,
+  onLoadReplies,
+}: SingleCommentProps) => {
+  const user = useAppSelector((state) => state.auth.user);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  
   return (
-    <div className="grid grid-cols-[auto_1fr] gap-2 relative">
-        
-        
-      {/* Avatar */}
+    <div className="relative">
+      {user && user.id === comment.author.id && !editing && (
+        <div className="absolute top-0 right-1">
+          <div onMouseEnter={() => setIsMenuOpen(true)}
+            onMouseLeave={() => setIsMenuOpen(false)} className="relative">
+            <IconButton><MoreVertIcon className="!text-[1.5rem]"/></IconButton>
+           {isMenuOpen && (
+            // Thêm tí hiệu ứng xuất hiện
+             <div className="absolute right-2 top-4 flex flex-col gap-2 bg-white p-2 rounded shadow-md">
+               <button onClick={()=>{setEditing(true)}} className="text-xs text-gray-600 hover:text-gray-800 cursor-pointer">
+                 Edit
+               </button>
+               <button className="text-xs text-gray-600 hover:text-gray-800 cursor-pointer">
+                 Delete
+               </button>
+             </div>
+           )}
+          </div>
+        </div>
+      )}
+
+      {!editing? <div className="grid grid-cols-[auto_1fr] gap-2 ">
+        {/* Avatar */}
       <div className="relative h-max">
         <img
           src={comment.author.profilePicture || "avatar.jpg"}
@@ -23,7 +55,7 @@ const SingleComment = ({ comment, onReplyClick, onLoadReplies }: SingleCommentPr
         />
         {/* <div  className="w-6 absolute h-1 bg-gray-300 -left-6 top-[50%] "></div> */}
       </div>
-      
+
       {/* Content */}
       <div>
         {/* Comment bubble */}
@@ -39,20 +71,20 @@ const SingleComment = ({ comment, onReplyClick, onLoadReplies }: SingleCommentPr
           </h1>
           <p className="text-sm">{comment.content}</p>
         </div>
-        
+
         {/* Actions: time, reply */}
         <div className="px-2 flex items-center gap-2">
           <h2 className="text-xs text-gray-500">
-            {new Date(comment.creationDate).toLocaleString()}
+            {new Date(comment.creationDate).toLocaleString().replace(/,/g, "")}
           </h2>
-          <button
+          {user?.id !== comment.author.id && <button
             onClick={onReplyClick}
-            className="text-xs text-gray-600 hover:text-gray-800 cursor-pointer px-2 hover:underline"
+            className="text-xs text-blue-500 hover:text-gray-800 cursor-pointer px-2 hover:underline"
           >
             Reply
-          </button>
+          </button>}
         </div>
-        
+
         {/* Load more replies button */}
         {comment.repliedCount !== null &&
           comment.repliedCount > 0 &&
@@ -66,6 +98,7 @@ const SingleComment = ({ comment, onReplyClick, onLoadReplies }: SingleCommentPr
             </button>
           )}
       </div>
+      </div>: user && <EditComment comment={comment} auth={user} onClose={() => setEditing(false)} />}
     </div>
   );
 };
