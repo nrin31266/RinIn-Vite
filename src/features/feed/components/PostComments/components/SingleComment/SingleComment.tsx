@@ -11,6 +11,12 @@ interface SingleCommentProps {
   comment: ICommentDto;
   onReplyClick: () => void;
   onLoadReplies: (commentId: number) => void;
+  isLast?: boolean
+  level: number,
+  showReplied: boolean,
+  hasReplied: boolean
+  parentIsLast: boolean,
+  showReplyForm?: boolean // Thêm prop để biết có hiển thị form reply hay không
 }
 
 /**
@@ -20,6 +26,12 @@ const SingleComment = ({
   comment,
   onReplyClick,
   onLoadReplies,
+  isLast,
+  level,
+  showReplied
+  ,hasReplied,
+  parentIsLast,
+  showReplyForm = false
 }: SingleCommentProps) => {
   const user = useAppSelector((state) => state.auth.user);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -33,8 +45,17 @@ const SingleComment = ({
     }
   }
   
+  
   return (
     <div className="relative">
+      {/* {level == 0 && } */}
+      {
+        (hasReplied || showReplyForm) && <div className={`absolute
+        ml-3
+        top-9 w-1 bg-gray-300 ${showReplied? 'h-[calc(100%-2.2rem)]' : 'h-[calc(100%-3rem)]'}`}></div>
+      }
+      {level !== 0 && <div className={`absolute w-1 bg-gray-300 ${isLast  ? 'h-5' : 'h-[130%]'} -ml-7`}></div>}
+      {level === 2 && !parentIsLast && <div className={`absolute w-1 bg-gray-300 h-[130%] -ml-17`}></div>}
       {user && user.id === comment.author.id && !editing && (
         <div className="absolute top-0 right-1">
           <div onMouseEnter={() => setIsMenuOpen(true)}
@@ -58,6 +79,8 @@ const SingleComment = ({
       {!editing? <div className="grid grid-cols-[auto_1fr] gap-2 ">
         {/* Avatar */}
       <div className="relative h-max">
+        {level !== 0 && <div className='absolute w-[1.5rem] h-1 top-1/2 bg-gray-300 -ml-7'></div>}
+        
         <img
           src={comment.author.profilePicture || "/avatar.jpg"}
           className="h-8 w-8 object-cover rounded-full"
@@ -65,6 +88,7 @@ const SingleComment = ({
         />
         {/* <div  className="w-6 absolute h-1 bg-gray-300 -left-6 top-[50%] "></div> */}
       </div>
+      
 
       {/* Content */}
       <div>
@@ -79,11 +103,13 @@ const SingleComment = ({
                 </span>
               )}
           </h1>
-          <p className="text-sm">{comment.content}</p>
+          {/* Cho xuống hàng chữ trong p là gì? */}
+          <p className="text-sm wrap-anywhere">{comment.content}</p>
         </div>
 
         {/* Actions: time, reply */}
         <div className="px-2 flex items-center gap-2">
+          
           <h2 className="text-xs text-gray-500">
             {new Date(comment.creationDate).toLocaleString().replace(/,/g, "")}
           </h2>
@@ -100,12 +126,15 @@ const SingleComment = ({
           comment.repliedCount > 0 &&
           comment.replies &&
           comment.repliedCount - comment.replies.length > 0 && (
-            <button
+            <div className='relative '>
+              <div className='absolute h-1 bg-gray-300 w-[2rem] -ml-7 top-1/2'></div>
+              <button
               onClick={() => onLoadReplies(comment.id)}
               className="hover:underline text-gray-700 text-sm cursor-pointer px-2"
             >
               {"See all " + comment.repliedCount + " replied"}
             </button>
+            </div>
           )}
       </div>
       </div>: user && <EditComment comment={comment} auth={user} onClose={() => setEditing(false)} />}

@@ -16,6 +16,8 @@ interface Props {
   parentSetOpenReply?: React.Dispatch<React.SetStateAction<Set<number>>>;
   parentReplyToInfo?: Map<number, {firstName: string | undefined, lastName: string | undefined, id: number}>;
   parentSetReplyToInfo?: React.Dispatch<React.SetStateAction<Map<number, {firstName: string | undefined, lastName: string | undefined, id: number}>>>;
+  // ✅ Thêm props để biết parent có phải là last không
+  parentIsLast?: boolean;
 }
 
 /**
@@ -28,7 +30,8 @@ const Comments = ({
   parentOpenReply, 
   parentSetOpenReply, 
   parentReplyToInfo, 
-  parentSetReplyToInfo 
+  parentSetReplyToInfo ,
+  parentIsLast = false
 }: Props) => {
   const dispatch = useAppDispatch();
 
@@ -64,9 +67,8 @@ const Comments = ({
   };
 
   return (
-    <div className="space-y-2 relative">
-      {/* <div className="absolute w-1 bg-gray-300 h-full -ml-7"></div> */}
-      {comments.map((comment) => {
+    <div className="relative space-y-4">
+        {comments.map((comment, i) => {
         // Logic xác định uniqueReplyKey để form reply mở đúng chỗ
         const uniqueReplyKey = level >= 2 && comment.parentCommentId 
           ? comment.parentCommentId 
@@ -76,6 +78,14 @@ const Comments = ({
           <div key={comment.id}>
             {/* Component hiển thị một comment */}
             <SingleComment
+            parentIsLast = {parentIsLast}
+            showReplyForm={level < 2 && currentOpenReply.has(uniqueReplyKey)}
+            hasReplied={(comment.replies && comment.replies.length > 0
+              || comment.repliedCount > 0
+            )? true: false}
+            showReplied = {comment.replies && comment.replies.length>0? true: false}
+            level={level}
+            isLast={i === comments.length -1 }
               comment={comment}
               onReplyClick={() => {
                 console.log("Debug:", {level, commentId: comment.id, parentCommentId: comment.parentCommentId, uniqueReplyKey});
@@ -88,8 +98,11 @@ const Comments = ({
               onLoadReplies={fetchComment}
             />
             
+            
             {/* Component form reply - chỉ hiển thị ở level < 2 */}
             <ReplyForm
+              parentHasReplies={comment.replies && comment.replies.length > 0}
+              level={level}
               isVisible={level < 2 && currentOpenReply.has(uniqueReplyKey)}
               replyToName={getReplyToName(uniqueReplyKey, `${comment.author.firstName} ${comment.author.lastName}`)}
               uniqueReplyKey={uniqueReplyKey}
@@ -101,13 +114,14 @@ const Comments = ({
                 
                 handleReply(reply, targetCommentId, repliedToId);
                 closeReplyForm(uniqueReplyKey);
+                
               }}
+              parentIsLast={ i === comments.length - 1 ? true: false}
               onClose={() => closeReplyForm(uniqueReplyKey)}
             />
-            
             {/* Recursive render cho nested comments */}
             {comment.replies && comment.replies.length > 0 && (
-              <div className="ml-10 mt-2">
+              <div className="ml-10">
                 <Comments 
                   comments={comment.replies} 
                   level={level + 1}
@@ -115,9 +129,11 @@ const Comments = ({
                   parentSetOpenReply={currentSetOpenReply}
                   parentReplyToInfo={currentReplyToInfo}
                   parentSetReplyToInfo={currentSetReplyToInfo}
+                  parentIsLast={i === comments.length - 1}
                 />
               </div>
             )}
+            
           </div>
         );
       })}
