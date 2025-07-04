@@ -56,7 +56,7 @@ export interface ICommentDto {
   replies?: ICommentDto[]; // Biến này để lưu các comment đã reply
 }
 export const fetchPosts = createAsyncThunk(
-  "feed/fetchPosts",
+  "posts/fetchPosts",
   async (_, { rejectWithValue }) => {
     try {
       const data = await handleAPI<IPostDto[]>({
@@ -77,7 +77,7 @@ export interface IPostReactionRq {
   targetAction: "POST" | "POST_MEDIA" | "COMMENT";
 }
 export const reactToPost = createAsyncThunk(
-  "feed/reactToPost",
+  "posts/reactToPost",
   async (reaction: IPostReactionRq, { rejectWithValue }) => {
     try {
       const data = await handleAPI({
@@ -93,7 +93,7 @@ export const reactToPost = createAsyncThunk(
   }
 );
 export const unReactToPost = createAsyncThunk(
-  "feed/un-reactToPost",
+  "posts/unReactToPost",
   async (reaction: IPostReactionRq, { rejectWithValue }) => {
     try {
       const data = await handleAPI({
@@ -109,7 +109,7 @@ export const unReactToPost = createAsyncThunk(
   }
 );
 export const createComment = createAsyncThunk(
-  "feed/createComment",
+  "posts/createComment",
   async (commentData: ICommentDtoRq, { rejectWithValue }) => {
     try {
       const data = await handleAPI<ICommentDto>({
@@ -125,7 +125,7 @@ export const createComment = createAsyncThunk(
   }
 );
 export const fetchPostComments = createAsyncThunk<ICommentDto[], { targetId: number; targetAction: "POST" | "POST_MEDIA" | "COMMENT" }>(
-  "feed/fetchPostComments",
+  "posts/fetchPostComments",
   async ({targetAction, targetId}, { rejectWithValue }) => {
     try {
       const data = await handleAPI<ICommentDto[]>({
@@ -140,10 +140,10 @@ export const fetchPostComments = createAsyncThunk<ICommentDto[], { targetId: num
   }
 );
 export const editComment = createAsyncThunk<void, { commentId: number; rq: ICommentDtoRq }>(
-  "feed/editComment",
+  "posts/editComment",
   async ({ commentId, rq }, { rejectWithValue }) => {
     try {
-      const data = await handleAPI<void>({
+      await handleAPI<void>({
         endpoint: `/feed/comments/${commentId}`,
         method: "put",
         isAuth: true,
@@ -156,7 +156,7 @@ export const editComment = createAsyncThunk<void, { commentId: number; rq: IComm
   }
 );
 export const deleteComment = createAsyncThunk<void, { commentId: number }>(
-  "feed/deleteComment",
+  "posts/deleteComment",
   async ({ commentId }, { rejectWithValue }) => {
     try {
       await handleAPI({
@@ -170,13 +170,30 @@ export const deleteComment = createAsyncThunk<void, { commentId: number }>(
   }
 );
 
-interface IFeedSlideState {
+export const fetchPostsByUserId = createAsyncThunk<IPostDto[], {userId: number}>(
+  "posts/fetchPostsByUserId", 
+  async ({userId}, {rejectWithValue}) => {
+    try {
+      const data = await handleAPI<IPostDto[]>({
+        endpoint: "/feed/posts/users/" + userId,
+        isAuth: true,
+        method: 'get'
+      });
+      return data;
+    } catch (error) {
+      return rejectWithValue(extractErrorMessage(error));
+    }
+  }
+);
+
+interface IPostsSliceState {
   posts: IPostDto[];
   selectedPost?: IPostDto; // Thêm biến để lưu post được chọn
   openPostDetailsModel: boolean; // Biến để xác định có mở model chi tiết post hay không
   currentPostComments: ICommentDto[]; // Biến để lưu các comment của post hiện tại
   status: {
     fetchPosts: "idle" | "loading" | "succeeded" | "failed";
+    fetchPostsByUserId: "idle" | "loading" | "succeeded" | "failed";
     reactToPost: "idle" | "loading" | "succeeded" | "failed";
     unReactToPost: "idle" | "loading" | "succeeded" | "failed";
     createComment: "idle" | "loading" | "succeeded" | "failed";
@@ -187,6 +204,7 @@ interface IFeedSlideState {
   };
   error: {
     fetchPosts: string | null;
+    fetchPostsByUserId: string | null;
     reactToPost: string | null;
     unReactToPost: string | null;
     createComment?: string | null; // Thêm error cho createComment nếu cần
@@ -194,13 +212,14 @@ interface IFeedSlideState {
     fetchRepliedComments: Record<number, string | null>; // Thêm error cho fetch
   };
 }
-const initialState: IFeedSlideState = {
+const initialState: IPostsSliceState = {
   posts: [],
   selectedPost: undefined,
   openPostDetailsModel: false,
   currentPostComments: [], // Biến để lưu các comment của post hiện tại
   status: {
     fetchPosts: "idle",
+    fetchPostsByUserId: "idle",
     reactToPost: "idle",
     unReactToPost: "idle",
     createComment: "idle",
@@ -211,6 +230,7 @@ const initialState: IFeedSlideState = {
   },
   error: {
     fetchPosts: null,
+    fetchPostsByUserId: null,
     reactToPost: null,
     unReactToPost: null,
     createComment: null, // Thêm error cho createComment nếu cần
@@ -241,13 +261,13 @@ const clearTempState = (post: IPostDto) => {
   post.tempState = undefined;
 };
 
-const updateSelectedPost = (state: IFeedSlideState, updatedPost: IPostDto) => {
+const updateSelectedPost = (state: IPostsSliceState, updatedPost: IPostDto) => {
   if (state.selectedPost && state.selectedPost.id === updatedPost.id) {
     state.selectedPost = { ...updatedPost };
   }
 };
-const feedSlide = createSlice({
-  name: "feedSlide",
+const postsSlice = createSlice({
+  name: "posts",
   initialState,
   reducers: {
     setSelectedPost: (state, action) => {
@@ -472,9 +492,20 @@ const feedSlide = createSlice({
       .addCase(deleteComment.rejected, (state, action) => {
         const { commentId } = action.meta.arg;
         state.status.deleteComment[commentId] = "failed";
+      })
+      .addCase(fetchPostsByUserId.pending, (state) => {
+        state.status.fetchPostsByUserId = "loading";
+      })
+      .addCase(fetchPostsByUserId.fulfilled, (state, action) => {
+        state.status.fetchPostsByUserId = "succeeded";
+        state.posts = action.payload;
+      })
+      .addCase(fetchPostsByUserId.rejected, (state, action) => {
+        state.status.fetchPostsByUserId = "failed";
+        state.error.fetchPostsByUserId = action.payload as string;
       });
   },
 });
 
-export default feedSlide.reducer;
-export const { setSelectedPost, clearSelectedPost, togglePostDetailsModel } = feedSlide.actions;
+export default postsSlice.reducer;
+export const { setSelectedPost, clearSelectedPost, togglePostDetailsModel } = postsSlice.actions;

@@ -6,7 +6,7 @@ import {
   fetchPostComments,
   togglePostDetailsModel,
   type ICommentDtoRq
-} from "../../../../store/feedSlide";
+} from "../../../../store/postsSlice";
 import { useAppDispatch, useAppSelector } from "../../../../store/store";
 import PostActionsBottom from "../Post/components/PostActionsBottom/PostActionsBottom";
 import PostContent from "../Post/components/PostContent/PostContent";
@@ -17,7 +17,7 @@ import PostComments from "../PostComments/PostComments";
 
 const PostDetailsModel: React.FC = () => {
   const { openPostDetailsModel, selectedPost } = useAppSelector(
-    (state) => state.feed
+    (state) => state.posts
   );
   const dispatch = useAppDispatch();
   const {user} = useAppSelector((state) => state.auth);

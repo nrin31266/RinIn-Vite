@@ -1,4 +1,4 @@
-import type { IPostDto } from '../../../../../../store/feedSlide';
+import type { IPostDto } from '../../../../../../store/postsSlice';
 import PostMediaGrid from '../../../PostMediaGrid/PostMediaGrid';
 
 interface PostContentProps {

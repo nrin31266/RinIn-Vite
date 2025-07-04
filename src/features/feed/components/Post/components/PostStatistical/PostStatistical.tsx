@@ -1,5 +1,5 @@
 import React from 'react'
-import type { IPostDto } from '../../../../../../store/feedSlide'
+import type { IPostDto } from '../../../../../../store/postsSlice'
 
 // Fake data
 const fakeReactions = [

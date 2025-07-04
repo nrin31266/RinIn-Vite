@@ -1,5 +1,5 @@
 import React from 'react';
-import type { IPostDto } from '../../../../../../store/feedSlide';
+import type { IPostDto } from '../../../../../../store/postsSlice';
 import { DateUtils } from '../../../../../../utils/dateUtils';
 import IconButton from '@mui/material/IconButton';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';

@@ -4,6 +4,7 @@ import HeaderComponent from "../HeaderComponent/HeaderComponent";
 import WebSocketProvider from "../../features/ws/WebSocketProvider";
 import { useAppSelector } from "../../store/store";
 import PostCreatorModal from "../PostCreatorModal/PostCreatorModal";
+import PostDetailsModel from "../../features/feed/components/PostDetailsModel/PostDetailsModel";
 
 const AppLayout = () => {
   const { isOpen} = useAppSelector((state) => state.postCreator);
@@ -17,6 +18,7 @@ const AppLayout = () => {
           <div className={`${isOpen ? 'block' : 'hidden'}`}>
             <PostCreatorModal />
           </div>
+          <PostDetailsModel/>
         </div>
       </div>
     </WebSocketProvider>

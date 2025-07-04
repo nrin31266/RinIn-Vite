@@ -1,6 +1,6 @@
 import React from "react";
 import RowsPhotoAlbum from "react-photo-album";
-import type { IPostMedia } from "../../../../store/feedSlide";
+import type { IPostMedia } from "../../../../store/postsSlice";
 import "react-photo-album/rows.css";
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 const PostMediaGrid = ({ postMedias }: { postMedias: IPostMedia[] }) => {

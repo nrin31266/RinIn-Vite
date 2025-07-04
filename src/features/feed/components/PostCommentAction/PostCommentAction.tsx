@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../store/store";
 import IconButton from "@mui/material/IconButton";
-import { createComment } from "../../../../store/feedSlide";
+import { createComment } from "../../../../store/postsSlice";
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 interface IPostCommentActionProps {
   onAction?:  (comment: string) => void;
@@ -16,7 +16,7 @@ const PostCommentAction = ({ onAction, loading, placeholder, initialValue }: IPo
   const [comment, setComment] = React.useState("");
   const maxHeightCommentInput = 24; //rem
   const { currentPostComments, status, selectedPost } = useAppSelector(
-    (state) => state.feed
+    (state) => state.posts
   );
   const dispatch = useAppDispatch();
   // Nếu có nội dung được truyền vào, đặt comment là nội dung đó

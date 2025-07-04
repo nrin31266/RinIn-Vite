@@ -3,7 +3,7 @@ import {
   createComment,
   fetchPostComments,
   type ICommentDto,
-} from "../../../../../store/feedSlide";
+} from "../../../../../store/postsSlice";
 import { useAppDispatch } from "../../../../../store/store";
 import { useReplyManager } from "../hooks/useReplyManager";
 import SingleComment from "./SingleComment/SingleComment";

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAppSelector } from "../../../../store/store";
-import type { ICommentDto } from "../../../../store/feedSlide";
+import type { ICommentDto } from "../../../../store/postsSlice";
 import PostCommentAction from "../PostCommentAction/PostCommentAction";
 import { DateUtils } from "../../../../utils/dateUtils";
 import Comments from "./components/Comments";
@@ -29,7 +29,7 @@ const buildCommentTree = (comments: ICommentDto[]) => {
 const PostComments = () => {
   const auth = useAppSelector((state) => state.auth);
   const { currentPostComments, status, error, selectedPost } = useAppSelector(
-    (state) => state.feed
+    (state) => state.posts
   );
   const commentTree = buildCommentTree(currentPostComments);
   

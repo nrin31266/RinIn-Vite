@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react'
-import { editComment, type ICommentDto } from '../../../../../../store/feedSlide'
 import type { IUser } from '../../../../../../store/authSlice'
 import PostCommentAction from '../../../PostCommentAction/PostCommentAction'
 import Divider from '@mui/material/Divider'
 import { useAppDispatch, useAppSelector } from '../../../../../../store/store'
+import { editComment, type ICommentDto } from '../../../../../../store/postsSlice'
 
 interface Props{
     comment: ICommentDto,
@@ -13,7 +13,7 @@ interface Props{
 
 const EditComment = ({auth, comment, onClose}: Props) => {
     const dispatch = useAppDispatch();
-    const status = useAppSelector((state) => state.feed.status.editComment[comment.id]);
+    const status = useAppSelector((state) => state.posts.status.editComment[comment.id]);
     useEffect(() => {
         // Focus the textarea when editing starts
         const textarea: HTMLTextAreaElement | null = document.querySelector(`[editing-comment-id="${comment.id}"] textarea`);

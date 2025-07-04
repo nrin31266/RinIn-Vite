@@ -1,14 +1,11 @@
-import Button from "@mui/material/Button";
-import { deleteComment, type ICommentDto } from "../../../../../../store/feedSlide";
-import { useAppDispatch, useAppSelector } from "../../../../../../store/store";
-import React, { useState } from "react";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import IconButton from "@mui/material/IconButton";
+import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
+import IconButton from "@mui/material/IconButton";
+import { useState } from "react";
+import { deleteComment, type ICommentDto } from "../../../../../../store/postsSlice";
+import { useAppDispatch, useAppSelector } from "../../../../../../store/store";
 import EditComment from "../EditComment/EditComment";
 interface SingleCommentProps {
   comment: ICommentDto;
@@ -29,7 +26,7 @@ const SingleComment = ({
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false); // Thêm state để quản lý việc xóa comment
   const dispatch = useAppDispatch();
-  const deleteStatus = useAppSelector((state) => state.feed.status.deleteComment[comment.id]);
+  const deleteStatus = useAppSelector((state) => state.posts.status.deleteComment[comment.id]);
   const handleDeleteComment = async () => {
     if (comment.id) {
       await dispatch(deleteComment({ commentId: comment.id }));
@@ -62,7 +59,7 @@ const SingleComment = ({
         {/* Avatar */}
       <div className="relative h-max">
         <img
-          src={comment.author.profilePicture || "avatar.jpg"}
+          src={comment.author.profilePicture || "/avatar.jpg"}
           className="h-8 w-8 object-cover rounded-full"
           alt="avt cm"
         />

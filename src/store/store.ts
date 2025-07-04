@@ -9,7 +9,7 @@ import networkingSlide from './networkingSlide';
 import messagingSlide from  './messagingSlide';
 import onlineStatusSlice from './onlineUserStatusSlide'; // Uncomment if you need online status management
 import postCreatorSlide from './postCreatorSlide'; // Uncomment if you need post creation functionality
-import feedSlide from './feedSlide'; // Uncomment if you need feed management
+import postsSlice from './postsSlice'; // Renamed from feedSlide - manages all posts (feed + user posts)
 import profileSlide from './profileSlide';
 
 const rootReducer = combineReducers({
@@ -19,7 +19,7 @@ const rootReducer = combineReducers({
   messaging: messagingSlide,
   onlineStatus: onlineStatusSlice,
   postCreator: postCreatorSlide,
-  feed: feedSlide,
+  posts: postsSlice, // Renamed from feed
   profile: profileSlide
 });
 

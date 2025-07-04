@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { reactToPost, setSelectedPost, togglePostDetailsModel, unReactToPost, type IPostDto } from "../../../../../../store/feedSlide";
+import { reactToPost, setSelectedPost, togglePostDetailsModel, unReactToPost, type IPostDto } from "../../../../../../store/postsSlice";
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
