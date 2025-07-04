@@ -72,7 +72,7 @@ const ProfileNav = () => {
               </p>
             </div>
           </div>
-          <Button size="small" variant="outlined" fullWidth>
+          <Button onClick={() => navigate(`/profile/${user?.id}`)} size="small" variant="outlined" fullWidth>
             View Profile
           </Button>
           <ul className="flex flex-col gap-2 text-sm text-gray-500 cursor-pointer w-max">

@@ -51,7 +51,7 @@ const Profile = () => {
       console.log(values);
       if (step === 2) {
         // Dispatch action to update user profile
-        dispatch(updateUserProfile({ body: values, id: user!.id }))
+        dispatch(updateUserProfile({ body: values, id: user!.id.toString() }))
           .unwrap()
           .then(() => {
             // Navigate to home or another page after successful update

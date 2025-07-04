@@ -4,12 +4,12 @@ import { useAppDispatch, useAppSelector } from "../../../../../../store/store";
 import React, { useState } from "react";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import IconButton from "@mui/material/IconButton";
-import EditComment from "../EditComment/Editcomment";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
+import EditComment from "../EditComment/EditComment";
 interface SingleCommentProps {
   comment: ICommentDto;
   onReplyClick: () => void;

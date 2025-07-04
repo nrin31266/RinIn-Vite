@@ -1,5 +1,4 @@
-import { useState } from "react";
-import Button from "@mui/material/Button";
+
 import { Provider } from "react-redux";
 import store from "./store/store";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -18,6 +17,7 @@ import Messaging from "./features/messaging/pages/Messaging/Messaging";
 import ConversationDefault from "./features/messaging/pages/ConversationDefault/ConversationDefault";
 import Conversation from "./features/messaging/pages/Conversation/Conversation";
 import Feed from "./features/feed/pages/Feed/Feed";
+import UserProfile from "./features/profile/pages/Profile/Profile";
 
 
 function App() {
@@ -36,6 +36,7 @@ function App() {
                 <Route index element={<ConversationDefault />} />
                 <Route path="conversations/:conversationId" element={<Conversation />} />  
               </Route>
+              <Route path="/profile/:userId" element={<UserProfile />} />
             </Route>
             <Route path="/auth" element={<AuthLayout />}>
               <Route path="login" element={<Login />} />
@@ -47,7 +48,7 @@ function App() {
               <Route path="verify-email" element={<VerifyEmail />} />
               <Route path="profile/:userId" element={<Profile />} />
             </Route>
-
+            
             <Route path="*" element={<div>404 Not Found</div>} />
           </Route>
         </Routes>

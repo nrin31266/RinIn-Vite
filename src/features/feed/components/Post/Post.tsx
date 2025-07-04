@@ -6,7 +6,7 @@ import PostHeader from './components/PostHeader/PostHeader';
 import PostContent from './components/PostContent/PostContent';
 const Post = ({ post }: { post: IPostDto }) => {
   return (
-    <div className='p-2 rounded-md shadow bg-white'>
+    <div className='p-2 rounded-md w-full shadow bg-white'>
       <PostHeader post={post} />
       <PostContent post={post} />
       <PostStatistical post={post} />
