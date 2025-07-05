@@ -17,8 +17,8 @@ import Messaging from "./features/messaging/pages/Messaging/Messaging";
 import ConversationDefault from "./features/messaging/pages/ConversationDefault/ConversationDefault";
 import Conversation from "./features/messaging/pages/Conversation/Conversation";
 import Feed from "./features/feed/pages/Feed/Feed";
+import ProfileLayout from "./features/profile/layout/ProfileLayout/ProfileLayout";
 import UserProfile from "./features/profile/pages/Profile/Profile";
-
 
 function App() {
   return (
@@ -36,7 +36,11 @@ function App() {
                 <Route index element={<ConversationDefault />} />
                 <Route path="conversations/:conversationId" element={<Conversation />} />  
               </Route>
-              <Route path="/profile/:userId" element={<UserProfile />} />
+              <Route path="/profile/:userId" element={<ProfileLayout />} >
+                <Route index element={<UserProfile />} />
+                <Route path="info" element={<div>Info</div>} />
+                <Route path="friends" element={<div>Friends</div>} />
+              </Route>
             </Route>
             <Route path="/auth" element={<AuthLayout />}>
               <Route path="login" element={<Login />} />

@@ -1,9 +1,8 @@
 import React, { useEffect } from "react";
-import type { IUser } from "../../../../../store/authSlice";
-import { useAppDispatch, useAppSelector } from "../../../../../store/store";
+import { useAppDispatch, useAppSelector } from "../../../store/store";
+import { fetchPostsByUserId } from "../../../store/postsSlice";
+import Post from "../../feed/components/Post/Post";
 
-import Post from "../../../../feed/components/Post/Post";
-import * as postsSlice from "../../../../../store/postsSlice";
 interface Props {
   userId: number;
 }
@@ -12,7 +11,7 @@ const Posts = ({ userId }: Props) => {
     
 
   const handleFetchPosts = async (userId: number) => {
-    await dispatch(postsSlice.fetchPostsByUserId({userId}));
+    await dispatch(fetchPostsByUserId({userId}));
   };
   
   const {posts} = useAppSelector(state=> state.posts); // Changed from state.feed

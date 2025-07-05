@@ -15,6 +15,8 @@ export interface IUser {
   profileComplete: boolean;
   profilePicture?: string;
   lastLogin?: string;
+  about?: string;
+  creationDate?: string;
 }
 
 export interface ILoginRes {

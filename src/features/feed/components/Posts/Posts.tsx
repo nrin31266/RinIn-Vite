@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../../../../store/store'
 import { fetchPosts, type IPostDto } from '../../../../store/postsSlice';
 import Post from '../Post/Post';
-import PostDetailsModel from '../PostDetailsModel/PostDetailsModel';
 
 
 
