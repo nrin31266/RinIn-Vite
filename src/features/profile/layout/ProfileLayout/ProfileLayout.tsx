@@ -1,26 +1,27 @@
 import React, { useEffect, useState } from 'react'
 import { Outlet, useParams } from 'react-router-dom'
 import type { IUser } from '../../../../store/authSlice'
-import { useAppSelector } from '../../../../store/store'
+import { useAppDispatch, useAppSelector } from '../../../../store/store'
 import Loading from '../../../../components/Loading/Loading'
 import Header from '../../components/Header'
+import { fetchUserProfileById, setShowUser } from '../../../../store/profileSlide'
 
 const ProfileLayout = () => {
 
     const {userId} = useParams();
-    const [loading, setLoading] = useState(false);
-    const [showUser, setShowUser] = useState<IUser>();
+    const showUser = useAppSelector(state => state.profile.showUser);
     const authUser = useAppSelector(state => state.auth.user);
+    const dispatch = useAppDispatch();
+    const fetchProfileStatus = useAppSelector(state => state.profile.status.fetchUserProfileById);
     
-    const handleFetchUser = async (userId: number)=>{
+    const handleFetchUser = (userId: number)=>{
         
         if(Number(userId) === authUser?.id){
-            setShowUser(authUser);
-            
+            dispatch(setShowUser(authUser));
         }else{
             // Fetch user 
-            setLoading(true);
-            setLoading(false);
+            dispatch(fetchUserProfileById(userId));
+
         }
     } 
 
@@ -33,8 +34,8 @@ const ProfileLayout = () => {
     if(!userId && !Number(userId)){
         return null;
     }
-    
-    if(!showUser || loading){
+
+    if((!showUser || fetchProfileStatus === 'loading' || fetchProfileStatus === 'idle')){
         return <Loading/>
     }
 
