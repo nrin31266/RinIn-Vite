@@ -12,10 +12,8 @@ import IconButton from "@mui/material/IconButton";
 import PostBgs from "./components/PostBgs";
 import PostTools from "./components/PostTools";
 import FileSection from "./components/FileSection";
-import { useFormik } from "formik";
 import Button from "@mui/material/Button";
-import { uploadFiles } from "../../features/firebase/uploadFile";
-import { MediaUtils } from "../../utils/mediaUtils";
+import { uploadMixedMedia, getMediaMetadata } from "../../features/firebase/uploadMedia";
 
 export interface IFormPostCreator {
   postMedias: {
@@ -29,24 +27,12 @@ export interface IFormPostCreator {
   }[];
 }
 
-const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
-};
-
 const PostCreatorModal = () => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const [isPostCreating, setIsPostCreating] = useState(false);
-  const { postBgs, postRq, isOpen, status } = useAppSelector(
+  const { postBgs, postRq, isOpen } = useAppSelector(
     (state) => state.postCreator
   );
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -70,195 +56,34 @@ const PostCreatorModal = () => {
   };
   
   /**
-   * Lấy metadata của một image file
-   */
-  const getImageMetadata = (file: File, pm: IPostMediaRq): Promise<IPostMediaRq> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      
-      img.onload = () => {
-        URL.revokeObjectURL(url); // Clean up
-        resolve({
-          ...pm,
-          height: img.naturalHeight,
-          width: img.naturalWidth,
-        });
-      };
-      img.onerror = reject;
-      img.src = url;
-    });
-  };
-
-  /**
-   * Lấy metadata của một video file
-   */
-  const getVideoMetadata = (file: File, pm: IPostMediaRq): Promise<IPostMediaRq> => {
-    return new Promise((resolve, reject) => {
-      const video = document.createElement("video");
-      const url = URL.createObjectURL(file);
-      
-      video.onloadedmetadata = () => {
-        URL.revokeObjectURL(url); // Clean up
-        resolve({
-          ...pm,
-          height: video.videoHeight,
-          width: video.videoWidth,
-          duration: video.duration,
-        });
-      };
-      video.onerror = reject;
-      video.preload = "metadata";
-      video.src = url;
-    });
-  };
-
-  /**
-   * Lấy metadata của tất cả files (dimensions, duration)
-   */
-  const getAllMediaMetadata = async (selectedFiles: File[], postMedias: IPostMediaRq[]): Promise<IPostMediaRq[]> => {
-    console.log("📏 Getting media metadata...");
-    
-    const mediaPromises = postMedias.map((pm, i) => {
-      const file = selectedFiles[i];
-      
-      if (pm.mediaType === "IMAGE") {
-        return getImageMetadata(file, pm);
-      } else if (pm.mediaType === "VIDEO") {
-        return getVideoMetadata(file, pm);
-      } else {
-        return Promise.reject(new Error("Unsupported media type"));
-      }
-    });
-
-    return Promise.all(mediaPromises);
-  };
-
-  /**
-   * Tạo thumbnails cho tất cả video files
-   */
-  const createVideoThumbnails = async (selectedFiles: File[], postMedias: IPostMediaRq[]) => {
-    console.log("🖼️ Creating video thumbnails...");
-    
-    const thumbnailFiles: { [index: number]: File } = {};
-    const thumbnailPromises: Promise<void>[] = [];
-    
-    for (let i = 0; i < selectedFiles.length; i++) {
-      const file = selectedFiles[i];
-      const pm = postMedias[i];
-      
-      if (pm.mediaType === "VIDEO") {
-        const thumbnailPromise = MediaUtils.createVideoThumbnail(file).then(thumbnailFile => {
-          thumbnailFiles[i] = thumbnailFile;
-        });
-        thumbnailPromises.push(thumbnailPromise);
-      }
-    }
-    
-    await Promise.all(thumbnailPromises);
-    return thumbnailFiles;
-  };
-
-  /**
-   * Upload một file và thumbnail (nếu có)
-   */
-  const uploadSingleMedia = async (
-    file: File,
-    pm: IPostMediaRq,
-    thumbnailFile: File | undefined,
-    index: number
-  ): Promise<{ mediaUrl: string; thumbnailUrl?: string; index: number }> => {
-    if (!user) throw new Error("User is required for upload");
-    
-    console.log(`📤 Starting upload ${index + 1}: ${file.name}`);
-    
-    // Upload media file
-    const [mediaUrl] = await uploadFiles([file], "posts", user.id.toString());
-    
-    let thumbnailUrl: string | undefined;
-    
-    // Upload thumbnail nếu là video
-    if (pm.mediaType === "VIDEO" && thumbnailFile) {
-      console.log(`🖼️ Uploading thumbnail ${index + 1}: thumbnail_${file.name}`);
-      const [thumbUrl] = await uploadFiles([thumbnailFile], "posts", user.id.toString());
-      thumbnailUrl = thumbUrl;
-    }
-    
-    console.log(`✅ Completed upload ${index + 1}: ${file.name}`);
-    return { mediaUrl, thumbnailUrl, index };
-  };
-
-  /**
-   * Upload tất cả files song song
-   */
-  const uploadAllMediaFiles = async (
-    selectedFiles: File[], 
-    postMedias: IPostMediaRq[], 
-    thumbnailFiles: { [index: number]: File }
-  ) => {
-    console.log("☁️ Starting parallel uploads...");
-    
-    // Tạo array các promises upload
-    const uploadPromises = selectedFiles.map((file, i) => 
-      uploadSingleMedia(file, postMedias[i], thumbnailFiles[i], i)
-    );
-    
-    // Đợi tất cả uploads hoàn thành song song
-    const uploadResults = await Promise.all(uploadPromises);
-    
-    // Sắp xếp lại theo index để đảm bảo thứ tự đúng
-    const mediaUrls: string[] = [];
-    const thumbnailUrls: string[] = [];
-    
-    uploadResults
-      .sort((a, b) => a.index - b.index)
-      .forEach(result => {
-        mediaUrls[result.index] = result.mediaUrl;
-        if (result.thumbnailUrl) {
-          thumbnailUrls[result.index] = result.thumbnailUrl;
-        }
-      });
-    
-    console.log("🎉 All uploads completed!");
-    return { mediaUrls, thumbnailUrls };
-  };
-
-  /**
-   * Map URLs vào postMedias
-   */
-  const mapUrlsToPostMedias = (
-    postMedias: IPostMediaRq[], 
-    mediaUrls: string[], 
-    thumbnailUrls: string[]
-  ): IPostMediaRq[] => {
-    console.log("🔗 Mapping URLs to post data...");
-    
-    return postMedias.map((pm, i) => ({
-      ...pm,
-      mediaUrl: mediaUrls[i],
-      thumbnailUrl: pm.mediaType === "VIDEO" ? thumbnailUrls[i] : undefined,
-    }));
-  };
-
-  /**
-   * Xử lý upload media cho post NORMAL
+   * Xử lý upload media cho post NORMAL - Simplified version
    */
   const handleNormalPostMedia = async (postMedias: IPostMediaRq[]): Promise<IPostMediaRq[]> => {
-    // Bước 1: Lấy metadata
-    const mediasWithMetadata = await getAllMediaMetadata(selectedFiles, postMedias);
+    if (!user) throw new Error("User is required for upload");
     
-    // Bước 2: Tạo thumbnails cho video
-    const thumbnailFiles = await createVideoThumbnails(selectedFiles, mediasWithMetadata);
+    console.log("Starting media upload...");
     
-    // Bước 3: Upload tất cả files
-    const { mediaUrls, thumbnailUrls } = await uploadAllMediaFiles(
-      selectedFiles, 
-      mediasWithMetadata, 
-      thumbnailFiles
+    // Step 1: Get metadata for all files
+    const mediaFilesWithMetadata = await Promise.all(
+      selectedFiles.map(file => getMediaMetadata(file))
     );
     
-    // Bước 4: Map URLs vào postMedias
-    return mapUrlsToPostMedias(mediasWithMetadata, mediaUrls, thumbnailUrls);
+    // Step 2: Upload all media (images and videos with thumbnails)
+    const uploadedMedia = await uploadMixedMedia(
+      mediaFilesWithMetadata, 
+      "posts", 
+      user.id.toString()
+    );
+    
+    // Step 3: Map to IPostMediaRq format
+    return uploadedMedia.map((media, index) => ({
+      ...postMedias[index],
+      mediaUrl: media.mediaUrl,
+      thumbnailUrl: media.thumbnailUrl,
+      width: media.width,
+      height: media.height,
+      duration: media.duration
+    }));
   };
   
   const handlePost = async () => {

@@ -41,4 +41,42 @@ export class MediaUtils {
       video.src = URL.createObjectURL(file);
     });
   };
+
+  public static getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve({
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+        });
+      };
+
+      img.onerror = reject;
+      img.src = url;
+    });
+  };
+
+  public static getVideoDimensions = (file: File): Promise<{ width: number; height: number; duration: number }> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement("video");
+      const url = URL.createObjectURL(file);
+
+      video.onloadedmetadata = () => {
+        URL.revokeObjectURL(url);
+        resolve({
+          width: video.videoWidth,
+          height: video.videoHeight,
+          duration: video.duration,
+        });
+      };
+
+      video.onerror = reject;
+      video.preload = "metadata";
+      video.src = url;
+    });
+  };
 }
