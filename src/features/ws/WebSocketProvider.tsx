@@ -12,8 +12,10 @@ const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!user?.id) return;
+    const token = localStorage.getItem("token");
+    if(!token) return;
 
-    const client = getWebSocketClient(user.id.toString());
+    const client = getWebSocketClient(user.id.toString(), token);
 
     if (!client.connected) {
       client.connect(

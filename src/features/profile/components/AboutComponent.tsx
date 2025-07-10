@@ -10,12 +10,13 @@ const AboutComponent = ({ showUser }: Props) => {
   const authenticatedUser = useAppSelector(state => state.auth.user)
   const [isEditing, setIsEditing] = React.useState(false);
   const editAboutRef = React.useRef<HTMLTextAreaElement>(null);
-  const [about, setAbout] = React.useState<string>(showUser.about || "");
+  const [about, setAbout] = React.useState<string>("");
   const updateAboutStatus = useAppSelector(state => state.profile.status.updateProfileAbout);
   const updateAboutError = useAppSelector(state => state.profile.error.updateProfileAbout);
   const dispatch = useAppDispatch();
   React.useEffect(() => {
     if (isEditing && editAboutRef.current) {
+      setAbout(showUser.about || ""); // Set the initial value to the user's about section
       editAboutRef.current.focus();
     }
   }, [isEditing]);
