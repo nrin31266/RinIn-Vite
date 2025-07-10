@@ -4,6 +4,7 @@ import { useOutletContext, useParams } from 'react-router-dom';
 import About from '../../components/AboutComponent';
 import { Outlet } from 'react-router-dom';
 import type { IUser } from '../../../../store/authSlice';
+import InformationComponent from '../../components/InformationComponent';
 
 const Profile = () => {
     const {userId} = useParams();
@@ -16,7 +17,10 @@ const Profile = () => {
 
   return (
     <div className='w-full h-full grid grid-cols-1 xl:grid-cols-[20rem_1fr] gap-4'>
-        <About showUser={showUser} />
+        <div>
+          <About showUser={showUser} />
+        </div>
+        
         <Posts userId={Number(userId)} />
     </div>
   )

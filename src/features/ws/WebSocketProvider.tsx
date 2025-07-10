@@ -15,11 +15,13 @@ const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
     const token = localStorage.getItem("token");
     if(!token) return;
 
-    const client = getWebSocketClient(user.id.toString(), token);
+    const client = getWebSocketClient( token);
 
     if (!client.connected) {
       client.connect(
-        { userId: user.id.toString() },
+        { 
+          // userId: user.id.toString()
+         },
         () => {
           console.log("✅ Connected WebSocket");
           setStompClient(client);
@@ -28,7 +30,7 @@ const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
             if (client.connected) {
               client.send("/app/ping", {}, "{}");
             }
-          }, 60000); // Send ping every 60 seconds
+          }, 5000); // Send ping every 60 seconds
 
           // Clear interval on disconnect
           client.onDisconnect = () => clearInterval(interval);

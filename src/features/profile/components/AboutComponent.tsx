@@ -3,6 +3,7 @@ import { setUser, type IUser } from '../../../store/authSlice'
 import { useAppDispatch, useAppSelector } from '../../../store/store'
 import Button from '@mui/material/Button'
 import { updateProfileAbout } from '../../../store/profileSlide'
+import InformationComponent from './InformationComponent'
 interface Props {
   showUser: IUser
 }
@@ -62,6 +63,9 @@ const AboutComponent = ({ showUser }: Props) => {
         <p className='text-gray-600 text-center'>{showUser.about || "Not provided"}</p>
         {authenticatedUser?.id === showUser.id && <button onClick={() => setIsEditing(true)} className='mt-2 bg-gray-200 px-2 py-1 
         rounded-md w-full font-semibold text-gray-800 hover:bg-gray-300 cursor-pointer'>Edit About</button>}</>}
+
+
+        <InformationComponent showUser={showUser} />
       </div>
     </>
   )
