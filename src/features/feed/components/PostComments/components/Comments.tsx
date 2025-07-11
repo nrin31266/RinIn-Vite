@@ -67,7 +67,9 @@ const Comments = ({
   };
 
   return (
-    <div className="relative space-y-4">
+    <div className={`relative space-y-4 ${level > 0 ? "mt-4" : ""}`}>
+       {level>0 && <div className="absolute -top-5 -left-7 w-1 h-5 bg-gray-300"></div>}
+
         {comments.map((comment, i) => {
         // Logic xác định uniqueReplyKey để form reply mở đúng chỗ
         const uniqueReplyKey = level >= 2 && comment.parentCommentId 
