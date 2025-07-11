@@ -1,17 +1,20 @@
 import Button from '@mui/material/Button';
 import React from 'react'
 
-const OtherLogin = () => {
+interface Props{
+  onOauthClick: () => void;
+}
+
+const OtherLogin = ({ onOauthClick }: Props) => {
   return (
     <div>
       <Button
+      
         variant="outlined"
         color="primary"
         size="large"
         fullWidth
-        onClick={() => {
-          
-        }}
+        onClick={onOauthClick}
         endIcon={<img src="/gg.png" alt="Google Icon" width="24" height="24" />}
       >
         Google

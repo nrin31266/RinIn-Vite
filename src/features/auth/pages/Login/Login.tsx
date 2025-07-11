@@ -8,12 +8,15 @@ import { login } from "../../../../store/authSlice";
 import Divider from "@mui/material/Divider";
 import OtherLogin from "../../components/OtherLogin/OtherLogin";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useOauth } from "../../../../hooks/useOauth";
+import Loading from "../../../../components/Loading/Loading";
 
 const Login = () => {
   const {error, status} = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isOauthInProgress, oauthError, handleOauthClick } = useOauth({ page: "login" });
 
   const formik = useFormik({
     initialValues: {
@@ -35,7 +38,9 @@ const Login = () => {
         .required("Required"),
     }),
   });
-
+  if (isOauthInProgress) {
+      return <Loading />;
+    }
   return (
     <div>
       <BoxComponent className="space-y-4">
@@ -115,7 +120,7 @@ const Login = () => {
           <Divider>Or</Divider>
         </div>
         <div>
-          <OtherLogin/>
+          <OtherLogin onOauthClick={handleOauthClick} />
         </div>
         <div className="text-center text-gray-600 mt-8">
           Don't have an account?{" "}

@@ -1,4 +1,8 @@
-import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  createAsyncThunk,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import handleAPI from "../cfgs/handleAPI";
 import { extractErrorMessage } from "./utils";
 import { updateUserProfile } from "./userProfile";
@@ -112,6 +116,25 @@ export const login = createAsyncThunk<
   }
 });
 
+export const googleOauthLoginOrRegister = createAsyncThunk<
+  ILoginRes,
+  { code: string; page: "login" | "signup" }
+>(
+  "auth/googleOauthLoginOrRegister",
+  async ({ code, page }, { rejectWithValue }) => {
+    try {
+      const data = await handleAPI<ILoginRes>({
+        endpoint: "/authentication/oauth/google/login-register",
+        body: { code, page },
+        method: "post",
+      });
+      return data;
+    } catch (error) {
+      return rejectWithValue(extractErrorMessage(error));
+    }
+  }
+);
+
 export const register = createAsyncThunk<
   ILoginRes,
   { email: string; password: string }
@@ -191,9 +214,9 @@ const authSlice = createSlice({
       state.user = null;
       localStorage.clear();
     },
-    setUser: (state, action : PayloadAction<IUser>) => {
+    setUser: (state, action: PayloadAction<IUser>) => {
       state.user = action.payload;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -278,6 +301,17 @@ const authSlice = createSlice({
       .addCase(resetPassword.rejected, (state, action) => {
         state.status.resetPassword = "failed";
         state.error.resetPassword = action.payload as string;
+      })
+      .addCase(googleOauthLoginOrRegister.pending, (state) => {
+        state.status.login = "loading";
+      })
+      .addCase(googleOauthLoginOrRegister.fulfilled, (state, action) => {
+        state.status.login = "succeeded";
+        localStorage.setItem("token", action.payload.token);
+      })
+      .addCase(googleOauthLoginOrRegister.rejected, (state, action) => {
+        state.status.login = "failed";
+        state.error.login = action.payload as string;
       });
   },
 });
