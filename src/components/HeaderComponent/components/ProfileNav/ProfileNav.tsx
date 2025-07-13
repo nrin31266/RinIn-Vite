@@ -56,7 +56,7 @@ const ProfileNav = () => {
       </div>
 
       {showProfileNav && (
-        <div ref={contentRef} className="absolute flex flex-col gap-4 right-0 top-12 bg-white rounded-[0.3rem_0_0.3rem_0.3rem] shadow-xs border-1 border-gray-200 p-4 z-50 w-[min(18rem, 100%)]">
+        <div ref={contentRef} className="absolute flex flex-col gap-4 right-0 top-12 bg-white rounded-[0.3rem_0_0.3rem_0.3rem] shadow-xs border-1 border-gray-200 p-4 z-50 w-[min(28rem,100%)]">
           <div className="flex items-center gap-4">
             <img
               src={user?.profilePicture || "/avatar.jpg"}

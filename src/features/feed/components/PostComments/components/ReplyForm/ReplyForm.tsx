@@ -25,8 +25,9 @@ const ReplyForm = ({ isVisible, replyToName, uniqueReplyKey, onSubmitReply, onCl
     <div className="relative" data-reply-key={uniqueReplyKey}>
       {isVisible && <>
       {!parentIsLast && level !==0 &&  <div className={`absolute w-1 bg-gray-300 h-[130%] z-1 -ml-7`}></div>}
-      <div className="absolute w-[1.5rem] ml-[0.8rem] h-1 top-1/2 bg-blue-500"></div>
-                  <div className={`absolute w-1 ${parentHasReplies ? 'h-[150%] -mt-4': 'h-[90%] -mt-8'} bg-blue-500 ml-3`}></div></>}
+      <div className="absolute w-[1.5rem] ml-3 h-1 top-1/2 bg-blue-500"></div>
+                  <div className={`absolute w-1 ${parentHasReplies ? 'h-[100%]': 'h-[50%] '} bg-blue-500 ml-3`}></div></>}
+                  <div className="absolute -top-7 ml-3 w-1 h-7 bg-gray-300"></div>
       <div className="relative ml-10 my-4">
         <p className="text-sm text-gray-600 mb-2">
           Replying to <span className="text-[var(--primary-color)]">{replyToName}</span>

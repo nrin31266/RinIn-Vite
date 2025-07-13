@@ -132,7 +132,7 @@ const MainNav = () => {
       {showNavigationMenu ? (
         <nav
           ref={navRef}
-          className="absolute md:static w-max right-16 bottom-0 md:top-auto top-12 md:border-none bg-white rounded-sm p-4 h-max md:bg-transparent border-1 border-gray-200 shadow-xs md:shadow-none z-50 md:p-0"
+          className="absolute w-[min(18rem,100%)] md:static  right-16 bottom-0 md:top-auto top-12 md:border-none bg-white rounded-sm p-4 h-max md:bg-transparent border-1 border-gray-200 shadow-xs md:shadow-none z-50 md:p-0"
         >
           <ul className="flex flex-col md:flex-row md:items-center gap-4 ">
             <li>
