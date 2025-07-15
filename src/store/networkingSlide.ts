@@ -63,7 +63,7 @@ export const fetchSuggestions = createAsyncThunk<IUser[]>(
   async (_, { rejectWithValue }) => {
     try {
       const data = await handleAPI<IUser[]>({
-        endpoint: "/networking/connections/suggestions",
+        endpoint: "/authentication/users/suggestions",
         isAuth: true,
       });
       return data;
